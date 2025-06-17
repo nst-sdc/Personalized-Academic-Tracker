@@ -1,19 +1,14 @@
-import React, { useEffect, useState } from 'react'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Signup from "./components/Signup";
 
 function App() {
-  const [msg, setMsg] = useState('');
-  
-  useEffect(() => {
-    fetch('http://localhost:5000/api')
-      .then((res) => res.json()) 
-      .then((data) => setMsg(data.message)); 
-  }, []);
-
   return (
-    <div>
-      <h1>Personalized Academic Tracker</h1>
-      <p>Server says: {msg}</p>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/signup" element={<Signup />} />
+        {/* Other routes */}
+      </Routes>
+    </Router>
   )
 }
 
