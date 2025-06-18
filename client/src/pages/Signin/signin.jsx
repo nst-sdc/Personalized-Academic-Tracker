@@ -11,6 +11,7 @@ const Signin = () => {
   };
 
   return (
+    <div className='outer-body'>
     <div className="input-box">
       <div className="header">
         <h1>Login</h1>
@@ -38,6 +39,7 @@ const Signin = () => {
         <button className="btn"><img src={appleIcon} alt="apple" width="24" /></button>
         <button className="btn"><img src={mobileIcon} alt="mobile" width="24" /></button>
       </div>
+    </div>
     </div>
   );
 };
