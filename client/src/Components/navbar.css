@@ -1,0 +1,91 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 10px 25px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    position: relative;
+    font-size: 20px;
+    font-weight: bold;
+    margin-right: 660px;
+    display: flex;
+    flex-direction: column;
+    ;
+}
+
+.logo span {
+    display: flex;
+    align-items: center;
+}
+
+
+.nav-menu {
+    display: flex;
+    gap: 60px;
+    list-style: none;
+
+}
+
+.nav-menu li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    cursor: pointer;
+    padding: 0 10px; 
+    font-size: 0.85rem;
+}
+
+.nav-menu li svg {
+    font-size: 1.2rem;
+    padding-bottom: 2px;
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.dropdown-icon {
+    font-size: 14px;
+}
+
+.navbar-dark {
+    background: #222 !important;
+    color: #fff !important;
+}
+
+.navbar-dark .nav-menu li,
+.navbar-dark .logo span,
+.navbar-dark .dropdown-icon {
+    color: #fff !important;
+}
+
+.navbar-dark .profile-img {
+    border: 2px solid #fff;
+}
+
+.theme-toggle {
+    font-Size: 1.6rem;
+    cursor: pointer;
+    margin-Right: 20px;
+    transition: transform 0.2s;
+}
