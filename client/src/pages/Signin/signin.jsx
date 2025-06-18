@@ -12,12 +12,21 @@ const Signin = () => {
   };
 
   return (
+
+    <div className='outer-body'>
+    <div className="input-box">
+      <div className="header">
+        <h1>Login</h1>
+        <p>Enter your email and password to log in</p>
+      </div>
+
     <div className="singnin-body">
       <div className="signin-container">
         <div className="signin-card">
           <div className="header">
             <h1>Login</h1>
           </div>
+
 
           <form onSubmit={handleLogin}>
             <input type="email" placeholder="Enter your Email" required />
@@ -47,6 +56,7 @@ const Signin = () => {
           </p>
         </div>
       </div>
+    </div>
     </div>
   );
 };
