@@ -2,8 +2,6 @@
 
 A smart, student-centric web app that helps track grades, monitor attendance, and stay organized with timely reminders. Designed with a mobile-first UI and scalable backend, this project is structured for clean collaboration and future enhancements.
 
-![Project Banner](./client/public/banner.png)
-
 ---
 
 ## 🚀 Features
