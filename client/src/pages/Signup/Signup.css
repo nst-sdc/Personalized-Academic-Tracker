@@ -1,3 +1,8 @@
+* {
+    box-sizing: border-box;
+  }
+  
+
 .singnin-body {
     margin: 0;
     padding: 0;
@@ -154,5 +159,38 @@
     color: #4361ee;
     text-decoration: none;
     font-weight: 500;
+  }
+  
+
+
+@media (max-width: 480px) {
+    .signup-card {
+      padding: 30px 20px;
+      border-radius: 16px;
+      margin: 0 16px;
+      box-sizing: border-box;
+    }
+  
+    .signup-title {
+      font-size: 24px;
+    }
+  
+    .signup-input {
+      padding: 10px 12px;
+      font-size: 13px;
+    }
+  
+    .signup-button {
+      padding: 12px;
+      font-size: 15px;
+    }
+  
+    .signup-footer {
+      font-size: 13px;
+    }
+  
+    .signup-body {
+      padding: 20px 12px;
+    }
   }
   
