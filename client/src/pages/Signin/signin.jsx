@@ -4,6 +4,7 @@ import facebookIcon from '../../assets/facebook.svg';
 import appleIcon from '../../assets/apple.svg';
 import mobileIcon from '../../assets/mobile.svg';
 import './Signin.css';
+import { Link } from 'react-router-dom';
 
 const Signin = () => {
   const handleLogin = (e) => {
@@ -11,6 +12,7 @@ const Signin = () => {
   };
 
   return (
+
     <div className='outer-body'>
     <div className="input-box">
       <div className="header">
@@ -18,26 +20,41 @@ const Signin = () => {
         <p>Enter your email and password to log in</p>
       </div>
 
-      <form onSubmit={handleLogin}>
-        <input type="email" placeholder="Enter your Email" className="input-field" required />
-        <br />
-        <input type="password" placeholder="Enter your password" className="input-field" required />
-        <div className="password-option">
-          <label>
-            <input type="checkbox" /> Remember Me
-          </label>
-          <a href="#">Forgot password?</a>
+    <div className="singnin-body">
+      <div className="signin-container">
+        <div className="signin-card">
+          <div className="header">
+            <h1>Login</h1>
+          </div>
+
+
+          <form onSubmit={handleLogin}>
+            <input type="email" placeholder="Enter your Email" required />
+            <input type="password" placeholder="Enter your password" required />
+            <div className="password-option">
+              <label>
+                <input type="checkbox" /> Remember Me
+              </label>
+              <a href="#">Forgot password?</a>
+            </div>
+            <button type="submit" className="login-button">Log In</button>
+          </form>
+
+          <div className="separator">
+            <span>Or login with</span>
+          </div>
+
+          <div className="login-options">
+            <button className="btn"><img src={googleIcon} alt="google" width="24" /></button>
+            <button className="btn"><img src={facebookIcon} alt="facebook" width="24" /></button>
+            <button className="btn"><img src={appleIcon} alt="apple" width="24" /></button>
+            <button className="btn"><img src={mobileIcon} alt="mobile" width="24" /></button>
+          </div>
+
+          <p className="signup-link">
+            Don't have an account? <Link to="/">Create an account</Link>
+          </p>
         </div>
-        <button type="submit" className="login-button">Log In</button>
-      </form>
-
-      <div className="separator">Or login with</div>
-
-      <div className="login-options">
-        <button className="btn"><img src={googleIcon} alt="google" width="24" /></button>
-        <button className="btn"><img src={facebookIcon} alt="facebook" width="24" /></button>
-        <button className="btn"><img src={appleIcon} alt="apple" width="24" /></button>
-        <button className="btn"><img src={mobileIcon} alt="mobile" width="24" /></button>
       </div>
     </div>
     </div>
