@@ -1,0 +1,76 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 12px 24px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    font-family: sans-serif;
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+}
+
+.logo {
+    position: relative;
+    font-size: 20px;
+    font-weight: bold;
+    margin-right: 650px;
+    display: flex;
+    flex-direction: column;
+;
+}
+
+.logo span {
+    display: flex;
+    align-items: center;
+}
+
+
+.nav-menu {
+    display: flex;
+    gap: 70px;
+    list-style: none;
+
+}
+
+.nav-menu li {
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.dropdown-icon {
+    font-size: 14px;
+}
+.navbar-dark {
+    background: #222 !important;
+    color: #fff !important;
+}
+
+.navbar-dark .nav-menu li,
+.navbar-dark .logo span,
+.navbar-dark .dropdown-icon {
+    color: #fff !important;
+}
+
+.navbar-dark .profile-img {
+    border: 2px solid #fff; }
