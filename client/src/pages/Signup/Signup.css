@@ -1,0 +1,158 @@
+.singnin-body {
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #fbe4d8, #e3d9ff);
+    height: 100vh;
+  }
+  
+  .signup-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  
+  .signup-card {
+    background: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 12px;
+    padding: 24px;
+    width: 830px;
+    max-width: 90%;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    backdrop-filter: blur(20px);
+  }
+  
+  
+  .signup-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+    color: #0b0b0b;
+  }
+  
+  .signup-subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: #6b6b6b;
+    margin: 0;
+    margin-bottom: 16px;
+  }
+  
+  .signup-card input[type="text"],
+  .signup-card input[type="email"],
+  .signup-card input[type="password"] {
+    height: 44px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    font-size: 14px;
+    outline: none;
+  }
+
+  .signup-card input[type="date"] {
+    height: 44px;
+    padding: 0 12px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    font-size: 14px;
+    outline: none;
+    color: #333;
+  }
+  
+  
+  .phone-group {
+    display: flex;
+    align-items: center;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: white;
+    height: 44px;
+    padding: 0 10px;
+  }
+  
+  .country-select {
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+    min-width: 70px;
+  }
+  
+  .separator {
+    width: 1px;
+    height: 60%;
+    background-color: #ccc;
+    margin: 0 10px;
+  }
+  
+  .phone-group input[type="text"] {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+  }
+  
+  .password-group {
+    display: flex;
+    align-items: center;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: white;
+    height: 44px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+  
+  .password-group input[type="password"],
+  .password-group input[type="text"] {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    background: transparent;
+  }
+  
+  .toggle-password {
+    cursor: pointer;
+    font-size: 18px;
+    color: #333;
+    display: flex;
+    align-items: center;
+  }
+  
+  
+  
+  .register-button {
+    background: linear-gradient(to right, #4361ee, #4cc9f0);
+    color: white;
+    height: 44px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .register-button:hover {
+    opacity: 0.9;
+  }
+  
+  .login-link {
+    text-align: center;
+    font-size: 14px;
+    color: #6b6b6b;
+  }
+  
+  .login-link a {
+    color: #4361ee;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  
