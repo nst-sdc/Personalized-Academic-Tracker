@@ -13,12 +13,9 @@ const Signin = () => {
 
   return (
 
-    <div className='outer-body'>
-    <div className="input-box">
-      <div className="header">
-        <h1>Login</h1>
-        <p>Enter your email and password to log in</p>
-      </div>
+    // <div className='outer-body'>
+    // <div className="input-box">
+      
 
     <div className="singnin-body">
       <div className="signin-container">
@@ -40,9 +37,7 @@ const Signin = () => {
             <button type="submit" className="login-button">Log In</button>
           </form>
 
-          <div className="separator">
-            <span>Or login with</span>
-          </div>
+          <div class="separator">Or login with</div>
 
           <div className="login-options">
             <button className="btn"><img src={googleIcon} alt="google" width="24" /></button>
@@ -52,12 +47,14 @@ const Signin = () => {
           </div>
 
           <p className="signup-link">
-            Don't have an account? <Link to="/">Create an account</Link>
+            Don't have an account? <Link to="/Signup">Create an account</Link>
           </p>
+
         </div>
       </div>
     </div>
-    </div>
+    // </div>
+    // </div>
   );
 };
 

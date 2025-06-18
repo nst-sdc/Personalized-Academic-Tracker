@@ -84,7 +84,7 @@ const Signup = () => {
                         <option value="+44">🇬🇧 +44</option>
                         <option value="+41">🇨🇭 +41</option>
                     </select>
-                    <div className="separator" />
+                    {/* <div className="separator" /> */}
                     <input
                         type="text"
                         name="phone"
@@ -100,7 +100,7 @@ const Signup = () => {
                         type={showPassword ? "text" : "password"}
                         placeholder="Password"
                         value={formData.password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={(e) => setShowPassword(e.target.value)}
                     />
                     <span className="toggle-password" onClick={togglePassword}>
                         {showPassword ? <FiEyeOff /> : <FiEye />}
@@ -110,7 +110,7 @@ const Signup = () => {
 
                 <button type="submit" className="register-button">Register</button>
                 <p className="login-link">
-                    Already have an account? <Link to="/signin">Login</Link>
+                    Already have an account? <Link to="/">Login</Link>
                 </p>
 
             </form>

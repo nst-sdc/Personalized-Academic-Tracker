@@ -3,19 +3,7 @@
   }
   
 
-.outer-body{
-  margin: 0;
-  padding: 0;
-  background: linear-gradient(135deg, #f5dcdc, #c7d2fe);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-/* container */
-.input-box{
+container{
   background-color:rgba(255, 255, 255, 0.9);
   padding:40px ;
   border-radius: 20px;
@@ -23,6 +11,7 @@
   max-width: 500px;
   width: 500px;
   text-align: center;
+}
 
 .singnin-body {
     margin: 0;
@@ -135,41 +124,32 @@
 
 /* separator */
 .separator {
-    position: relative;
-    margin: 20px 0;
-    color: #777;
-    font-size: 13px;
-    text-align: center;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #777;
+  font-size: 13px;
+  margin: 20px 0 10px;
+  width: 100%;
+  background: none;
 }
 
-.separator::after,
-.separator::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    width: 30%;
-    height: 1px;
-    background: #e0e0e0;
+.separator::before,
+.separator::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #ccc;
 }
 
 .separator::before {
-    left: 0;
+  margin-right: 10px;
 }
 
 .separator::after {
-    right: 0;
+  margin-left: 10px;
 }
 
-.separator span {
-    background: rgba(255, 255, 255, 0.6);
-    padding: 0 15px;
-    position: relative;
-    z-index: 1;
-}
 
 /* Social Login Buttons */
 .login-options {
