@@ -13,6 +13,7 @@ const Signin = () => {
 
   return (
 
+
     // <div className='outer-body'>
     // <div className="input-box">
       
@@ -25,26 +26,33 @@ const Signin = () => {
           </div>
 
 
-          <form onSubmit={handleLogin}>
-            <input type="email" placeholder="Enter your Email" required />
-            <input type="password" placeholder="Enter your password" required />
-            <div className="password-option">
-              <label>
-                <input type="checkbox" /> Remember Me
-              </label>
-              <a href="#">Forgot password?</a>
-            </div>
-            <button type="submit" className="login-button">Log In</button>
-          </form>
+            <form onSubmit={handleLogin}>
+              <input type="email" placeholder="Enter your Email" required />
+              <input type="password" placeholder="Enter your password" required />
+              <div className="password-option">
+                <label>
+                  <input type="checkbox" /> Remember Me
+                </label>
+                <a href="#">Forgot password?</a>
+              </div>
+              <button type="submit" className="login-button">Log In</button>
+            </form>
+
 
           <div class="separator">Or login with</div>
+                
+            <div className="login-options">
+              <button className="btn"><img src={googleIcon} alt="google" width="24" /></button>
+              <button className="btn"><img src={facebookIcon} alt="facebook" width="24" /></button>
+              <button className="btn"><img src={appleIcon} alt="apple" width="24" /></button>
+              <button className="btn"><img src={mobileIcon} alt="mobile" width="24" /></button>
+            </div>
 
-          <div className="login-options">
-            <button className="btn"><img src={googleIcon} alt="google" width="24" /></button>
-            <button className="btn"><img src={facebookIcon} alt="facebook" width="24" /></button>
-            <button className="btn"><img src={appleIcon} alt="apple" width="24" /></button>
-            <button className="btn"><img src={mobileIcon} alt="mobile" width="24" /></button>
+            <p className="signup-link">
+              Don't have an account? <Link to="/">Create an account</Link>
+            </p>
           </div>
+
 
           <p className="signup-link">
             Don't have an account? <Link to="/Signup">Create an account</Link>
