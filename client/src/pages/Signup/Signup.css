@@ -76,7 +76,7 @@
   }
   
   
-  .phone-group {
+  /* .phone-group {
     display: flex;
     align-items: center;
     border: 1px solid #e0e0e0;
@@ -96,19 +96,52 @@
     min-width: 70px;
   }
   
-  .separator {
-    width: 1px;
-    height: 60%;
-    background-color: #ccc;
-    margin: 0 10px;
-  }
-  
   .phone-group input[type="text"] {
     flex: 1;
     border: none;
     outline: none;
     font-size: 14px;
-  }
+  } */
+
+  /* .separator {
+    width: 1px;
+    height: 60%;
+    background-color: #ccc;
+    margin: 0 10px;
+  } */
+  
+  .phone-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background-color: white;
+  padding: 0 12px;
+}
+
+.country-select {
+  appearance: none;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  padding-right: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.phone-group input[type="text"] {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: transparent;
+  margin-left: 8px;
+}
+
   
   .password-group {
     display: flex;
