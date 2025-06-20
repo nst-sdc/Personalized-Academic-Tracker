@@ -1,8 +1,8 @@
 import React from "react";
-import searchIcon from "../../assets/images/Search.png";
-import arrowIcon from "../../assets/images/Arrow.png";
-import notificationIcon from "../../assets/images/Notification.png";
-import Ellipse19 from "../../assets/images/Ellipse 19.png";
+import { FiSearch } from "react-icons/fi";
+import { IoIosArrowDown } from "react-icons/io";
+import { IoMdNotificationsOutline } from "react-icons/io";
+import { FaUserCircle } from "react-icons/fa";
 
 function TopNavbar({ darkMode, setDarkMode }) {
   const bgHeader = darkMode ? "bg-[#1A1A1A]" : "bg-[#F5F5F5]";
@@ -15,7 +15,7 @@ function TopNavbar({ darkMode, setDarkMode }) {
   return (
     <header className={`relative h-[118px] px-6 w-full flex items-center justify-between transition-colors duration-300 ${bgHeader}`}>
       <div className={`flex items-center gap-3 px-4 py-2 rounded transition-colors duration-300 ${bgSearch}`}>
-        <img src={searchIcon} alt="search icon" className="w-6 h-6" />
+        <FiSearch alt="search icon" className="w-6 h-6" />
         <input
           type="text"
           placeholder="Search"
@@ -37,21 +37,21 @@ function TopNavbar({ darkMode, setDarkMode }) {
         </button>
 
         <div className="flex items-center gap-2 cursor-pointer">
-          <img src={Ellipse19} alt="profile" className="w-8 h-8 rounded-full object-cover" />
+          <FaUserCircle alt="profile" className="w-8 h-8 rounded-full object-cover" />
           <span className={`text-sm font-medium leading-none ${profileTextColor}`}>
             Username
           </span>
-          <img src={arrowIcon} alt="arrow" className="w-3 h-3 mt-[1px]" />
+          <IoIosArrowDown alt="arrow" className="w-3 h-3 mt-[1px]" />
         </div>
       </div>
 
       <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 text-sm ${pendingColor}`}>
         <div className="relative flex items-center">
-          <img src={notificationIcon} alt="Notification" className="w-5 h-5" />
+          <IoMdNotificationsOutline alt="Notification" className="w-5 h-5" />
           <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full" />
         </div>
         <span className="leading-none">2 pending invites</span>
-        <img src={arrowIcon} alt="arrow" className="w-3 h-3 mt-[1px]" />
+        <IoIosArrowDown alt="arrow" className="w-3 h-3 mt-[1px]" />
       </div>
     </header>
   );
