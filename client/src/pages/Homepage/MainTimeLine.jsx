@@ -84,12 +84,9 @@ const MainTimeLine = ({ darkMode }) => {
       </nav>
 
       {/* Timeline Area */}
-      <main
-        className={`relative pr-8 overflow-hidden ${darkMode ? "bg-black" : "bg-white"}`}
-        style={{
-          height: `${100 + calculateTopFromTime(events[events.length - 1].end) + events[events.length - 1].height + 16}px`,
-        }}
-      >
+      <main className={`relative flex-1 overflow-y-auto ${darkMode ? "bg-gray-" : "bg-Whhite"}`}
+      style= {{ height: 'calc(100vh - 100px)', minHeight: '600px'}}>
+
         {/* Header */}
         <div className="flex items-baseline pl-8 pt-6 pb-6">
           <p className={`text-[32px] font-normal ${darkMode ? "text-gray-400" : "text-[#9E9E9E]"}`}>

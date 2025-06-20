@@ -1,5 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+
+const monthNames = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
 
 const LeftDateColumn = ({ darkMode }) => {
   const bgMain = darkMode ? "bg-[#0D0D0D]" : "bg-white";
@@ -9,16 +14,43 @@ const LeftDateColumn = ({ darkMode }) => {
   const cardBg = darkMode ? "bg-[#1E1E1E]" : "bg-white";
   const highlightCardBg = darkMode ? "bg-[#2A2A2A]" : "bg-cyan-50";
 
+  // State for month and year
+  const today = new Date();
+  const [month, setMonth] = useState(today.getMonth());
+  const [year, setYear] = useState(today.getFullYear());
+
+  const handlePrevMonth = () => {
+    setMonth(prev => {
+      if (prev === 0) {
+        setYear(y => y - 1);
+        return 11;
+      }
+      return prev - 1;
+    });
+  };
+
+  const handleNextMonth = () => {
+    setMonth(prev => {
+      if (prev === 11) {
+        setYear(y => y + 1);
+        return 0;
+      }
+      return prev + 1;
+    });
+  };
+
   return (
     <div
-      className={`w-80 ${bgMain} p-6 flex-shrink-0 h-[calc(100vh-70px)] overflow-hidden transition-colors duration-300 font-khula`}
+      className={`w-80 ${bgMain} p-6 flex-shrink-0 h-[calc(100vh-70px)] overflow-y-auto transition-colors duration-300 font-khula`}
     >
       <div className="flex items-center justify-between mb-8">
-        <button aria-label="Previous month" className={`p-1 ${textLight}`}>
+        <button aria-label="Previous month" className={`p-1 ${textLight}`} onClick={handlePrevMonth}>
           <IoIosArrowBack size={20} />
         </button>
-        <h2 className={`text-lg font-medium ${textPrimary}`}>October 2022</h2>
-        <button aria-label="Next month" className={`p-1 ${textLight}`}>
+        <h2 className={`text-lg font-medium ${textPrimary}`}>
+          {monthNames[month]} {year}
+        </h2>
+        <button aria-label="Next month" className={`p-1 ${textLight}`} onClick={handleNextMonth}>
           <IoIosArrowForward size={20} />
         </button>
       </div>
