@@ -1,6 +1,5 @@
 import React from "react";
-import LeftArrow from "../../assets/images/Left_Arrow.png";
-import RightArrow from "../../assets/images/Right_Arrow.png";
+import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 
 const LeftDateColumn = ({ darkMode }) => {
   const bgMain = darkMode ? "bg-[#0D0D0D]" : "bg-white";
@@ -16,11 +15,11 @@ const LeftDateColumn = ({ darkMode }) => {
     >
       <div className="flex items-center justify-between mb-8">
         <button aria-label="Previous month" className={`p-1 ${textLight}`}>
-          <img src={LeftArrow} alt="leftarrow_icon" />
+          <IoIosArrowBack size={20} />
         </button>
         <h2 className={`text-lg font-medium ${textPrimary}`}>October 2022</h2>
         <button aria-label="Next month" className={`p-1 ${textLight}`}>
-          <img src={RightArrow} alt="rightarrow_icon" />
+          <IoIosArrowForward size={20} />
         </button>
       </div>
 
@@ -33,12 +32,8 @@ const LeftDateColumn = ({ darkMode }) => {
 
       <div className={`${highlightCardBg} rounded-lg p-4 mb-10`}>
         <div className="flex items-center gap-3 mb-4">
-          <span className="bg-[#59C3C8] text-white text-xs px-2 py-1 rounded">
-            Today
-          </span>
-          <span className={`text-sm font-medium ${textPrimary}`}>
-            Fundamentals of Design
-          </span>
+          <span className="bg-[#59C3C8] text-white text-xs px-2 py-1 rounded">Today</span>
+          <span className={`text-sm font-medium ${textPrimary}`}>Fundamentals of Design</span>
         </div>
 
         <div className="flex items-start gap-3 mb-3">

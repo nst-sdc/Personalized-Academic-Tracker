@@ -1,32 +1,21 @@
 import React from "react";
 import EventCard from "./EventCard";
-import MainLogo from "../../assets/images/MainLogo.png";
-import li_home from "../../assets/images/li_home.png";
-import li_search from "../../assets/images/li_search.png";
-import li_pie_chart from "../../assets/images/li_pie_chart.png";
-import li_clock from "../../assets/images/li_clock.png";
-import li_user from "../../assets/images/li_user.png";
-import Arrow from "../../assets/images/Arrow.png";
-import small from "../../assets/images/Rectangle 15.png";
-import mid from "../../assets/images/Rectangle 11.png";
-import large from "../../assets/images/Rectangle 13.png";
-import Ellipse17 from "../../assets/images/Ellipse 17.png";
+import { MdHome, MdSearch, MdPieChart, MdAccessTime, MdPerson } from "react-icons/md";
+import { IoMdArrowDropdown } from "react-icons/io";
+import { FaCircle, FaMinus } from "react-icons/fa";
 
 // Timeline starts at 11:00
 const timelineStartHour = 11;
 const pixelsPerMinute = 2.5;
 
-// Converts time string like "13:15" to position in pixels
 function calculateTopFromTime(timeStr) {
   const [hours, minutes] = timeStr.split(":").map(Number);
   const totalMinutes = (hours - timelineStartHour) * 60 + minutes;
   return totalMinutes * pixelsPerMinute;
 }
 
-// Time labels
 const times = ["11:00", "12:00", "13:00", "14:00", "15:00"];
 
-// Events to be displayed
 const events = [
   {
     title: "Ergonomics",
@@ -59,28 +48,26 @@ const MainTimeLine = ({ darkMode }) => {
       {/* Top navbar */}
       <nav className={`relative flex items-center justify-between h-[100px] px-8 flex-shrink-0 ${darkMode ? "bg-black" : "bg-white"}`}>
         
-        {/* Left: Logo */}
+        {/* Left: Logo (you can still use your actual logo image here if needed) */}
         <div className="flex items-center space-x-2 relative">
-          <div className="text-2xl font-bold tracking-tight">
-            <img src={MainLogo} alt="LOGO" className="h-8 w-auto" />
-          </div>
+          <div className="text-2xl font-bold tracking-tight">LOGO</div>
         </div>
 
         {/* Center: Navigation icons */}
         <div className={`flex items-center space-x-10 text-sm font-medium ${darkMode ? "text-gray-400" : "text-[#757575]"}`}>
           {[
-            { icon: li_home, label: "Home", bg: "#E3F2FD" },
-            { icon: li_search, label: "Search" },
-            { icon: li_pie_chart, label: "Analysis" },
-            { icon: li_clock, label: "History" },
-            { icon: li_user, label: "Profile" },
+            { icon: <MdHome size={24} />, label: "Home", bg: "#E3F2FD" },
+            { icon: <MdSearch size={24} />, label: "Search" },
+            { icon: <MdPieChart size={24} />, label: "Analysis" },
+            { icon: <MdAccessTime size={24} />, label: "History" },
+            { icon: <MdPerson size={24} />, label: "Profile" },
           ].map((item, idx) => (
             <div key={idx} className="flex flex-col items-center cursor-pointer" aria-label={`Navigate to ${item.label}`}>
               <div
-                className={`h-9 w-9 flex items-center justify-center mb-1 rounded-full`}
+                className="h-9 w-9 flex items-center justify-center mb-1 rounded-full"
                 style={{ backgroundColor: item.bg || "transparent" }}
               >
-                <img src={item.icon} alt={`${item.label}_icon`} />
+                {item.icon}
               </div>
               <span className="text-xs">{item.label}</span>
             </div>
@@ -89,31 +76,31 @@ const MainTimeLine = ({ darkMode }) => {
 
         {/* Right: Profile avatar */}
         <div className="flex items-center space-x-2">
-          <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm flex-shrink-0">
-            <img src={Ellipse17} alt="Profile" className="w-full h-full object-cover" />
+          <div className="w-10 h-10 rounded-full bg-gray-400 border-2 border-white shadow-sm flex items-center justify-center text-white font-semibold text-sm">
+            U
           </div>
-          <img src={Arrow} alt="arrow_icon" />
+          <IoMdArrowDropdown size={20} />
         </div>
       </nav>
 
-      {/* Timeline area */}
+      {/* Timeline Area */}
       <main
         className={`relative pr-8 overflow-hidden ${darkMode ? "bg-black" : "bg-white"}`}
         style={{
           height: `${100 + calculateTopFromTime(events[events.length - 1].end) + events[events.length - 1].height + 16}px`,
         }}
       >
-        {/* Header: Date */}
+        {/* Header */}
         <div className="flex items-baseline pl-8 pt-6 pb-6">
-          <p className={`text-[32px] leading-none tracking-tight font-normal ${darkMode ? "text-gray-400" : "text-[#9E9E9E]"}`}>
+          <p className={`text-[32px] font-normal ${darkMode ? "text-gray-400" : "text-[#9E9E9E]"}`}>
             10th,
           </p>
-          <p className={`font-khula font-semibold text-[38px] ml-2 leading-none tracking-tight ${darkMode ? "text-white" : "text-black"}`}>
+          <p className={`font-khula font-semibold text-[38px] ml-2 ${darkMode ? "text-white" : "text-black"}`}>
             Monday
           </p>
         </div>
 
-        {/* Time Labels Left */}
+        {/* Time Labels */}
         <div className={`absolute left-0 top-[100px] w-[90px] text-right text-sm font-medium z-10 ${darkMode ? "text-gray-400" : "text-[#757575]"}`}>
           {times.map((time, index) => (
             <div
@@ -122,12 +109,12 @@ const MainTimeLine = ({ darkMode }) => {
               style={{ height: `${60 * pixelsPerMinute}px` }}
             >
               <p className="mb-1">{time}</p>
-              {/* Small dashes between time markers */}
+              {/* Replace small/mid dashes */}
               {index !== times.length - 1 && (
-                <div className="flex flex-col justify-evenly h-full mt-2 pr-[4px]">
-                  <img src={small} alt="small dash" className="w-[8px] h-[2px] opacity-50" />
-                  <img src={mid} alt="mid dash" />
-                  <img src={small} alt="small dash" className="w-[8px] h-[2px] opacity-50" />
+                <div className="flex flex-col justify-evenly h-full mt-2 pr-[4px] text-gray-400">
+                  <FaMinus className="opacity-50 text-[6px]" />
+                  <FaMinus className="text-[10px]" />
+                  <FaMinus className="opacity-50 text-[6px]" />
                 </div>
               )}
             </div>
@@ -139,8 +126,8 @@ const MainTimeLine = ({ darkMode }) => {
           className="absolute left-[60px] flex items-center z-10"
           style={{ top: `${100 + calculateTopFromTime("12:45")}px` }}
         >
-          <img src={large} alt="large dash" />
-          <div className="bg-[#00BCD4] mr-3" />
+          <FaMinus className="text-[#00BCD4] text-[12px]" />
+          <div className="bg-[#00BCD4] w-1 h-1 rounded-full ml-2 mr-3" />
           <p className={`text-[28px] font-bold ${darkMode ? "text-white" : "text-black"}`}>12:45</p>
           <div className="ml-3">
             <p className="text-[12px] text-[#E91E63] leading-tight">Next event in</p>
@@ -148,7 +135,7 @@ const MainTimeLine = ({ darkMode }) => {
           </div>
         </div>
 
-        {/* Render Event Cards */}
+        {/* Events */}
         {events.map((event, idx) => (
           <div
             key={idx}
