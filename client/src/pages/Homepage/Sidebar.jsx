@@ -8,8 +8,18 @@ import chartIcon from "../../assets/images/Chart.png";
 import settingsIcon from "../../assets/images/Setting.png";
 import logoutIcon from "../../assets/images/Logout.png";
 
-const Sidebar = ({ darkMode }) => {
+const navItems = [
+  { key: "home", icon: homeIcon, alt: "Home" },
+  { key: "calendar", icon: calendarIcon, alt: "Calendar" },
+  { key: "work", icon: workIcon, alt: "Work" },
+  { key: "play", icon: playIcon, alt: "Play" },
+  { key: "chart", icon: chartIcon, alt: "Chart" },
+  { key: "settings", icon: settingsIcon, alt: "Settings" },
+];
+
+const Sidebar = ({ darkMode, activeItem, onNavClick }) => {
   const bgColor = darkMode ? "bg-[#0D0D0D]" : "bg-white";
+  const activeBg = darkMode ? "bg-[#232323]" : "bg-gray-200";
 
   return (
     <aside className={`w-[118px] h-screen flex justify-center overflow-hidden transition-colors duration-300 ${bgColor}`}>
@@ -26,12 +36,21 @@ const Sidebar = ({ darkMode }) => {
 
         {/* Navigation Icons */}
         <nav className="flex flex-col items-center gap-8 mt-24">
-          <img src={homeIcon} alt="Home" className="w-8 h-8 cursor-pointer" loading="lazy" />
-          <img src={calendarIcon} alt="Calendar" className="w-8 h-8 cursor-pointer" loading="lazy" />
-          <img src={workIcon} alt="Work" className="w-8 h-8 cursor-pointer" loading="lazy" />
-          <img src={playIcon} alt="Play" className="w-8 h-8 cursor-pointer" loading="lazy" />
-          <img src={chartIcon} alt="Chart" className="w-8 h-8 cursor-pointer" loading="lazy" />
-          <img src={settingsIcon} alt="Settings" className="w-8 h-8 cursor-pxointer" loading="lazy" />
+          {navItems.map((item) => (
+            <div
+              key={item.key}
+              className={`relative w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors duration-200`}
+              onClick={() => onNavClick && onNavClick(item.key)}
+              title={item.alt}
+            >
+              <img
+                src={item.icon}
+                alt={item.alt}
+                className={`w-8 h-8 transition duration-200 ${activeItem === item.key ? 'sidebar-icon-red' : ''}`}
+                loading="lazy"
+              />
+            </div>
+          ))}
         </nav>
 
         {/* Logout Icon */}
