@@ -38,13 +38,11 @@ const Sidebar = ({ darkMode }) => {
               to={item.path}
               title={item.alt}
               className={({ isActive }) =>
-                `relative w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors duration-200 ${
-                  isActive ? "bg-[#e0e0e0]" : ""
-                }`
+                `relative w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer transition-colors duration-200`
               }
             >
               {({ isActive }) => (
-                <div className={`transition duration-200 ${isActive ? "text-[#4361ee]" : "text-gray-500"}`}>
+                <div className={`transition duration-200 ${isActive ? "text-red-600" : "text-gray-500"}`}>
                   {item.icon}
                 </div>
               )}

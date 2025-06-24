@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import EventCard from "./EventCard";
 import { MdHome, MdSearch, MdPieChart, MdAccessTime, MdPerson } from "react-icons/md";
 import { IoMdArrowDropdown } from "react-icons/io";
@@ -42,47 +42,10 @@ const events = [
 ];
 
 const MainTimeLine = ({ darkMode }) => {
+  const [activeNav, setActiveNav] = useState("Home");
   return (
     <div className={`flex-1 flex flex-col ${darkMode ? "bg-black text-white" : "bg-white text-black"}`}>
       
-      {/* Top navbar */}
-      <nav className={`relative flex items-center justify-between h-[100px] px-8 flex-shrink-0 ${darkMode ? "bg-black" : "bg-white"}`}>
-        
-        {/* Left: Logo (you can still use your actual logo image here if needed) */}
-        <div className="flex items-center space-x-2 relative">
-          <div className="text-2xl font-bold tracking-tight">LOGO</div>
-        </div>
-
-        {/* Center: Navigation icons */}
-        <div className={`flex items-center space-x-10 text-sm font-medium ${darkMode ? "text-gray-400" : "text-[#757575]"}`}>
-          {[
-            { icon: <MdHome size={24} />, label: "Home", bg: "#E3F2FD" },
-            { icon: <MdSearch size={24} />, label: "Search" },
-            { icon: <MdPieChart size={24} />, label: "Analysis" },
-            { icon: <MdAccessTime size={24} />, label: "History" },
-            { icon: <MdPerson size={24} />, label: "Profile" },
-          ].map((item, idx) => (
-            <div key={idx} className="flex flex-col items-center cursor-pointer" aria-label={`Navigate to ${item.label}`}>
-              <div
-                className="h-9 w-9 flex items-center justify-center mb-1 rounded-full"
-                style={{ backgroundColor: item.bg || "transparent" }}
-              >
-                {item.icon}
-              </div>
-              <span className="text-xs">{item.label}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Right: Profile avatar */}
-        <div className="flex items-center space-x-2">
-          <div className="w-10 h-10 rounded-full bg-gray-400 border-2 border-white shadow-sm flex items-center justify-center text-white font-semibold text-sm">
-            U
-          </div>
-          <IoMdArrowDropdown size={20} />
-        </div>
-      </nav>
-
       {/* Timeline Area */}
       <main className={`relative flex-1 overflow-y-auto ${darkMode ? "bg-gray-" : "bg-Whhite"}`}
       style= {{ height: 'calc(100vh - 100px)', minHeight: '600px'}}>
