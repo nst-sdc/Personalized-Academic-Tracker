@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Signup from "./pages/Signup/signup.jsx";
 import Signin from "./pages/Signin/signin.jsx";
 import HomePageLayout from "./pages/Homepage/HomePageLayout.jsx";
+import MainHeroPage from "./pages/Hero/hero.jsx";
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
@@ -19,6 +20,7 @@ function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/hero" element={<MainHeroPage darkMode={darkMode} />} />
         <Route
           path="/*"
           element={<HomePageLayout darkMode={darkMode} setDarkMode={setDarkMode} />}

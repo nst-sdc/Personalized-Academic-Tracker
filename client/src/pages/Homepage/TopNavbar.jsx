@@ -3,6 +3,7 @@ import { FiSearch } from "react-icons/fi";
 import { IoIosArrowDown } from "react-icons/io";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { FaUserCircle } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 function TopNavbar({ darkMode, setDarkMode }) {
   const bgHeader = darkMode ? "bg-[#1A1A1A]" : "bg-[#F5F5F5]";
@@ -11,6 +12,7 @@ function TopNavbar({ darkMode, setDarkMode }) {
   const placeholderColor = darkMode ? "placeholder:text-gray-400" : "placeholder:text-gray-500";
   const pendingColor = darkMode ? "text-gray-300" : "text-gray-600";
   const profileTextColor = darkMode ? "text-gray-200" : "text-gray-800";
+  const navigate = useNavigate();
 
   return (
     <header className={`relative h-[118px] px-6 w-full flex items-center justify-between transition-colors duration-300 ${bgHeader}`}>
@@ -36,7 +38,7 @@ function TopNavbar({ darkMode, setDarkMode }) {
           {darkMode ? "🌙" : "☀️"}
         </button>
 
-        <div className="flex items-center gap-2 cursor-pointer">
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate("/signin")}>
           <FaUserCircle alt="profile" className="w-8 h-8 rounded-full object-cover" />
           <span className={`text-sm font-medium leading-none ${profileTextColor}`}>
             Username
