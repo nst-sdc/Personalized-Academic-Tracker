@@ -5,16 +5,14 @@ import TopNavbar from "./TopNavbar.jsx";
 import LeftDateColoumn from "./LeftDateColoumn.jsx";
 import MainTimeline from "./MainTimeLine.jsx";
 import Calendar from "../Calendar.jsx"; // Ensure this file exists
+import Settings from "../Settings";
 
 function HomePageLayout({ darkMode, setDarkMode }) {
   const location = useLocation();
   const [activeItem, setActiveItem] = useState("home");
 
   const showDateCol =
-    location.pathname !== "/" &&
-    location.pathname !== "/calendar" &&
-    location.pathname !== "/signin" &&
-    location.pathname !== "/signup";
+    (location.pathname === "/" || location.pathname === "/calendar");
 
   const bgClass = darkMode ? "bg-black text-white" : "bg-white text-black";
 
@@ -38,6 +36,7 @@ function HomePageLayout({ darkMode, setDarkMode }) {
             <Routes>
               <Route path="/" element={<MainTimeline darkMode={darkMode} />} />
               <Route path="/calendar" element={<Calendar darkMode={darkMode} />} />
+              <Route path="/settings" element={<Settings darkMode={darkMode} />} />
               <Route
                 path="*"
                 element={
