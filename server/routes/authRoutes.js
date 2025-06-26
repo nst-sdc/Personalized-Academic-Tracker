@@ -1,7 +1,8 @@
 const express = require('express');
-const { signup, login, getUserProfile, updateUserProfile, verifyToken } = require('../controllers/authController');
+const { signup, login, verifyEmail, getUserProfile, updateUserProfile, verifyToken } = require('../controllers/authController');
 const { validateSignupData, validateLoginData, validateProfileUpdate } = require('../middleware/validation');
 const { protect, authorize } = require('../middleware/JWTauthentication');
+const User = require('../models/User');
 
 const router = express.Router();
 
@@ -14,6 +15,11 @@ router.post('/signup', validateSignupData, signup);
 // @desc    Login user
 // @access  Public
 router.post('/login', validateLoginData, login);
+
+// @route   POST /api/auth/verify-email
+// @desc    Verify user email address from token
+// @access  Public
+router.post('/verify-email', verifyEmail); // <-- THIS LINE IS NOW CORRECT
 
 // @route   GET /api/auth/verify
 // @desc    Verify JWT token

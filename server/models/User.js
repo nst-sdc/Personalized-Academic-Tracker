@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const validator = require('validator');
+const crypto = require('crypto');
 
 // User Schema
 const userSchema = new mongoose.Schema({
@@ -59,6 +60,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Password is required'],
         minlength: [8, 'Password must be at least 8 characters long'],
+        select: false, // Hide password by default
         validate: {
             validator: function(value) {
                 // Password must contain at least one uppercase, one lowercase, one number, and one special character
@@ -67,6 +69,12 @@ const userSchema = new mongoose.Schema({
             message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
         }
     },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationToken: String,
+    verificationTokenExpires: Date,
     isActive: {
         type: Boolean,
         default: true
@@ -115,13 +123,26 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Instance method to get user without password
+// Instance method to get user without password and sensitive fields
 userSchema.methods.toJSON = function() {
     const userObject = this.toObject();
     delete userObject.password;
     delete userObject.loginAttempts;
     delete userObject.lockUntil;
+    delete userObject.verificationToken;
+    delete userObject.verificationTokenExpires;
     return userObject;
+};
+
+// New: Generate and hash verification token
+userSchema.methods.generateVerificationToken = function() {
+    const token = crypto.randomBytes(32).toString('hex');
+    this.verificationToken = crypto
+        .createHash('sha256')
+        .update(token)
+        .digest('hex');
+    this.verificationTokenExpires = Date.now() + 15 * 60 * 1000; // Token expires in 15 minutes
+    return token;
 };
 
 // Instance method to increment login attempts

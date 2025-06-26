@@ -115,8 +115,8 @@ const Signup = () => {
             
             const data = await response.json();
             
-            if (data.success) {
-                setMessage({ type: 'success', text: 'Account created successfully! Please login.' });
+            if (response.ok && data.success) {
+                setMessage({ type: 'success', text: data.message });
                 // Reset form
                 setFormData({
                     firstName: "",
@@ -127,12 +127,7 @@ const Signup = () => {
                     phone: "",
                     password: "",
                 });
-                // Optionally redirect to login page after a delay
-                setTimeout(() => {
-                    navigate('/signin')
-                    // Navigate to login page
-                    // window.location.href = '/login'; // or use React Router navigation
-                }, 2000);
+                // DO NOT redirect. User must verify their email first.
                 
             } else {
                 setMessage({ type: 'error', text: data.message || 'Registration failed' });
@@ -175,6 +170,7 @@ const Signup = () => {
                         value={formData.firstName}
                         onChange={handleChange}
                         required
+                        disabled={loading}
                     />
                     <input
                         type="text"
@@ -183,6 +179,7 @@ const Signup = () => {
                         value={formData.lastName}
                         onChange={handleChange}
                         required
+                        disabled={loading}
                     />
                     <input
                         type="email"
@@ -191,6 +188,7 @@ const Signup = () => {
                         value={formData.email}
                         onChange={handleChange}
                         required
+                        disabled={loading}
                     />
                     <input
                         type="date"
@@ -199,6 +197,7 @@ const Signup = () => {
                         value={formData.dob}
                         onChange={handleChange}
                         required
+                        disabled={loading}
                     />
 
                     {/* Phone number */}
@@ -208,6 +207,7 @@ const Signup = () => {
                             name="countryCode"
                             value={formData.countryCode}
                             onChange={handleChange}
+                            disabled={loading}
                         >
                             <option value="+91">🇮🇳 +91</option>
                             <option value="+1">🇺🇸 +1</option>
@@ -221,6 +221,7 @@ const Signup = () => {
                             value={formData.phone}
                             onChange={handleChange}
                             required
+                            disabled={loading}
                         />
                     </div>
 
@@ -233,8 +234,9 @@ const Signup = () => {
                             value={formData.password}
                             onChange={handleChange}
                             required
+                            disabled={loading}
                         />
-                        <span className="toggle-password" onClick={togglePassword}>
+                        <span className="toggle-password" onClick={!loading ? togglePassword : undefined}>
                             {showPassword ? <FiEyeOff /> : <FiEye />}
                         </span>
                     </div>
