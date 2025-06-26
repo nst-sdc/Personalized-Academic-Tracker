@@ -1,4 +1,12 @@
 const User = require('../models/User');
+const jwt = require('jsonwebtoken');
+
+// Generate JWT Token
+const generateToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRE || '7d',
+    });
+};
 
 // @desc    Register new user
 // @route   POST /api/auth/signup
@@ -39,10 +47,14 @@ const signup = async (req, res) => {
         // Save user to database
         await newUser.save();
         
-        // Return success response (password automatically excluded by toJSON method)
+        // Generate JWT token
+        const token = generateToken(newUser._id);
+        
+        // Return success response with token
         res.status(201).json({
             success: true,
             message: 'User registered successfully',
+            token,
             user: newUser
         });
         
@@ -63,7 +75,7 @@ const signup = async (req, res) => {
             });
         }
         
-        // Handle duplicate key error (shouldn't happen due to our checks, but just in case)
+        // Handle duplicate key error
         if (error.code === 11000) {
             const field = Object.keys(error.keyValue)[0];
             return res.status(409).json({
@@ -96,7 +108,7 @@ const login = async (req, res) => {
         }
         
         // Find user and include password for comparison
-        const user = await User.findOne({ email: email.toLowerCase() }).select('+password');
+        const user = await User.findOne({ email: email.toLowerCase().trim() }).select('+password');
         
         if (!user) {
             return res.status(401).json({
@@ -117,17 +129,26 @@ const login = async (req, res) => {
         
         // Check if user is active
         if (!user.isActive) {
-            return res.status(401).json({
+            return res.status(403).json({
                 success: false,
                 message: 'Account is deactivated. Please contact support.'
             });
         }
         
-        // Return success response (password automatically excluded by toJSON method)
+        // Generate JWT token
+        const token = generateToken(user._id);
+        
+        // Update last login (optional)
+        user.lastLogin = new Date();
+        await user.save();
+        
+        // Return success response with token
         res.status(200).json({
             success: true,
             message: 'Login successful',
-            user: user
+            token,
+            user: user, // Password is automatically excluded by toJSON method
+            expiresIn: process.env.JWT_EXPIRE || '7d'
         });
         
     } catch (error) {
@@ -141,7 +162,7 @@ const login = async (req, res) => {
 
 // @desc    Get user profile
 // @route   GET /api/auth/profile/:id
-// @access  Private (you'll add authentication middleware later)
+// @access  Private
 const getUserProfile = async (req, res) => {
     try {
         const { id } = req.params;
@@ -179,7 +200,7 @@ const getUserProfile = async (req, res) => {
 
 // @desc    Update user profile
 // @route   PUT /api/auth/profile/:id
-// @access  Private (you'll add authentication middleware later)
+// @access  Private
 const updateUserProfile = async (req, res) => {
     try {
         const { id } = req.params;
@@ -238,9 +259,64 @@ const updateUserProfile = async (req, res) => {
     }
 };
 
+// @desc    Verify JWT token
+// @route   GET /api/auth/verify
+// @access  Private
+const verifyToken = async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(' ')[1];
+        
+        if (!token) {
+            return res.status(401).json({
+                success: false,
+                message: 'No token provided'
+            });
+        }
+        
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.id);
+        
+        if (!user || !user.isActive) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid token or user not found'
+            });
+        }
+        
+        res.status(200).json({
+            success: true,
+            message: 'Token is valid',
+            user: user
+        });
+        
+    } catch (error) {
+        console.error('Token verification error:', error);
+        
+        if (error.name === 'JsonWebTokenError') {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid token'
+            });
+        }
+        
+        if (error.name === 'TokenExpiredError') {
+            return res.status(401).json({
+                success: false,
+                message: 'Token expired'
+            });
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
+        });
+    }
+};
+
 module.exports = {
     signup,
     login,
     getUserProfile,
-    updateUserProfile
+    updateUserProfile,
+    verifyToken
 };

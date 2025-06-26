@@ -75,9 +75,26 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['user', 'admin'],
         default: 'user'
+    },
+    lastLogin: {
+        type: Date,
+        default: null
+    },
+    loginAttempts: {
+        type: Number,
+        default: 0
+    },
+    lockUntil: {
+        type: Date,
+        default: null
     }
 }, {
     timestamps: true // This adds createdAt and updatedAt fields
+});
+
+// Virtual for checking if account is locked
+userSchema.virtual('isLocked').get(function() {
+    return !!(this.lockUntil && this.lockUntil > Date.now());
 });
 
 // Hash password before saving
@@ -102,7 +119,45 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
 userSchema.methods.toJSON = function() {
     const userObject = this.toObject();
     delete userObject.password;
+    delete userObject.loginAttempts;
+    delete userObject.lockUntil;
     return userObject;
+};
+
+// Instance method to increment login attempts
+userSchema.methods.incLoginAttempts = function() {
+    // If we have a previous lock that has expired, restart at 1
+    if (this.lockUntil && this.lockUntil < Date.now()) {
+        return this.updateOne({
+            $unset: {
+                lockUntil: 1
+            },
+            $set: {
+                loginAttempts: 1
+            }
+        });
+    }
+    
+    const updates = { $inc: { loginAttempts: 1 } };
+    
+    // If we have reached max attempts and it's not locked already, lock it
+    if (this.loginAttempts + 1 >= 5 && !this.isLocked) {
+        updates.$set = {
+            lockUntil: Date.now() + 2 * 60 * 60 * 1000 // 2 hours
+        };
+    }
+    
+    return this.updateOne(updates);
+};
+
+// Instance method to reset login attempts
+userSchema.methods.resetLoginAttempts = function() {
+    return this.updateOne({
+        $unset: {
+            loginAttempts: 1,
+            lockUntil: 1
+        }
+    });
 };
 
 // Static method to find user by email
