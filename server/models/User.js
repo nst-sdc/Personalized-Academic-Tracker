@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const validator = require('validator');
+const crypto = require('crypto');
 
 // User Schema
 const userSchema = new mongoose.Schema({
@@ -59,6 +60,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Password is required'],
         minlength: [8, 'Password must be at least 8 characters long'],
+        select: false, // Hide password by default
         validate: {
             validator: function(value) {
                 // Password must contain at least one uppercase, one lowercase, one number, and one special character
@@ -67,6 +69,12 @@ const userSchema = new mongoose.Schema({
             message: 'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
         }
     },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationToken: String,
+    verificationTokenExpires: Date,
     isActive: {
         type: Boolean,
         default: true
@@ -75,9 +83,26 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['user', 'admin'],
         default: 'user'
+    },
+    lastLogin: {
+        type: Date,
+        default: null
+    },
+    loginAttempts: {
+        type: Number,
+        default: 0
+    },
+    lockUntil: {
+        type: Date,
+        default: null
     }
 }, {
     timestamps: true // This adds createdAt and updatedAt fields
+});
+
+// Virtual for checking if account is locked
+userSchema.virtual('isLocked').get(function() {
+    return !!(this.lockUntil && this.lockUntil > Date.now());
 });
 
 // Hash password before saving
@@ -98,11 +123,62 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Instance method to get user without password
+// Instance method to get user without password and sensitive fields
 userSchema.methods.toJSON = function() {
     const userObject = this.toObject();
     delete userObject.password;
+    delete userObject.loginAttempts;
+    delete userObject.lockUntil;
+    delete userObject.verificationToken;
+    delete userObject.verificationTokenExpires;
     return userObject;
+};
+
+// New: Generate and hash verification token
+userSchema.methods.generateVerificationToken = function() {
+    const token = crypto.randomBytes(32).toString('hex');
+    this.verificationToken = crypto
+        .createHash('sha256')
+        .update(token)
+        .digest('hex');
+    this.verificationTokenExpires = Date.now() + 15 * 60 * 1000; // Token expires in 15 minutes
+    return token;
+};
+
+// Instance method to increment login attempts
+userSchema.methods.incLoginAttempts = function() {
+    // If we have a previous lock that has expired, restart at 1
+    if (this.lockUntil && this.lockUntil < Date.now()) {
+        return this.updateOne({
+            $unset: {
+                lockUntil: 1
+            },
+            $set: {
+                loginAttempts: 1
+            }
+        });
+    }
+    
+    const updates = { $inc: { loginAttempts: 1 } };
+    
+    // If we have reached max attempts and it's not locked already, lock it
+    if (this.loginAttempts + 1 >= 5 && !this.isLocked) {
+        updates.$set = {
+            lockUntil: Date.now() + 2 * 60 * 60 * 1000 // 2 hours
+        };
+    }
+    
+    return this.updateOne(updates);
+};
+
+// Instance method to reset login attempts
+userSchema.methods.resetLoginAttempts = function() {
+    return this.updateOne({
+        $unset: {
+            loginAttempts: 1,
+            lockUntil: 1
+        }
+    });
 };
 
 // Static method to find user by email

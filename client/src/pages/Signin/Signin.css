@@ -1,16 +1,5 @@
 * {
     box-sizing: border-box;
-  }
-  
-
-container{
-  background-color:rgba(255, 255, 255, 0.9);
-  padding:40px ;
-  border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
-  width: 500px;
-  text-align: center;
 }
 
 .singnin-body {
@@ -41,10 +30,9 @@ container{
     gap: 16px;
     -webkit-backdrop-filter: blur(20px);
     backdrop-filter: blur(20px);
-
 }
 
-/* header */
+/* Header */
 .header h1 {
     text-align: center;
     font-size: 24px;
@@ -61,9 +49,16 @@ container{
     margin-bottom: 16px;
 }
 
-/* input field */
+/* Input Groups */
+.input-group {
+    position: relative;
+    margin-bottom: 16px;
+}
+
+/* Input Fields */
 .signin-card input[type="email"],
-.signin-card input[type="password"] {
+.signin-card input[type="password"],
+.signin-card input[type="text"] {
     height: 44px;
     padding: 0 12px;
     border-radius: 8px;
@@ -72,15 +67,60 @@ container{
     outline: none;
     width: 100%;
     box-sizing: border-box;
-    margin-bottom: 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.signin-card input[type="email"]:focus,
+.signin-card input[type="password"]:focus,
+.signin-card input[type="text"]:focus {
+    border-color: #4361ee;
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
 }
 
 .signin-card input[type="email"]::placeholder,
-.signin-card input[type="password"]::placeholder {
+.signin-card input[type="password"]::placeholder,
+.signin-card input[type="text"]::placeholder {
     color: #999;
 }
 
-/* password option */
+.signin-card input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Error Message */
+.error-message {
+    color: #dc2626;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Success Message */
+.success-message {
+    color: #059669;
+    background-color: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Password Options */
 .password-option {
     display: flex;
     justify-content: space-between;
@@ -92,19 +132,33 @@ container{
 
 .password-option input[type="checkbox"] {
     margin-right: 6px;
+    cursor: pointer;
+}
+
+.password-option input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+}
+
+.password-option label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
 }
 
 .password-option a {
     text-decoration: none;
     font-weight: 500;
     color: #4361ee;
+    transition: color 0.3s ease;
 }
 
 .password-option a:hover {
     text-decoration: underline;
+    color: #3730a3;
 }
 
-/* log in button */
+/* Login Button */
 .login-button {
     background: linear-gradient(to right, #4361ee, #4cc9f0);
     color: white;
@@ -116,40 +170,68 @@ container{
     width: 100%;
     font-weight: 500;
     margin-bottom: 20px;
+    transition: opacity 0.3s ease, transform 0.2s ease;
 }
 
-.login-button:hover {
+.login-button:hover:not(:disabled) {
     opacity: 0.9;
+    transform: translateY(-1px);
 }
 
-/* separator */
+.login-button:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.login-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Loading Animation */
+.login-button:disabled::after {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-left: 8px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Separator */
 .separator {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  color: #777;
-  font-size: 13px;
-  margin: 20px 0 10px;
-  width: 100%;
-  background: none;
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #777;
+    font-size: 13px;
+    margin: 20px 0 10px;
+    width: 100%;
+    background: none;
 }
 
 .separator::before,
 .separator::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: #ccc;
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: #ccc;
 }
 
 .separator::before {
-  margin-right: 10px;
+    margin-right: 10px;
 }
 
 .separator::after {
-  margin-left: 10px;
+    margin-left: 10px;
 }
-
 
 /* Social Login Buttons */
 .login-options {
@@ -175,8 +257,14 @@ container{
     flex: 1;
 }
 
-.btn:hover {
+.btn:hover:not(:disabled) {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
 }
 
 .btn img {
@@ -185,7 +273,7 @@ container{
     transition: filter 0.3s ease;
 }
 
-/* Signup link */
+/* Signup Link */
 .signup-link {
     text-align: center;
     font-size: 14px;
@@ -197,8 +285,44 @@ container{
     color: #4361ee;
     text-decoration: none;
     font-weight: 500;
+    transition: color 0.3s ease;
 }
 
+.signup-link a:hover {
+    color: #3730a3;
+    text-decoration: underline;
+}
+
+/* Password Toggle Button */
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
+}
+
+.password-toggle:hover:not(:disabled) {
+    color: #4361ee;
+}
+
+.password-toggle:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Mobile Responsiveness */
 @media (max-width: 480px) {
     .signin-card {
         padding: 30px 20px;
@@ -217,7 +341,8 @@ container{
     }
 
     .signin-card input[type="email"],
-    .signin-card input[type="password"] {
+    .signin-card input[type="password"],
+    .signin-card input[type="text"] {
         font-size: 14px;
         padding: 10px 12px;
     }
@@ -245,5 +370,11 @@ container{
     .btn img {
         width: 20px;
         height: 20px;
+    }
+
+    .error-message,
+    .success-message {
+        font-size: 13px;
+        padding: 10px;
     }
 }
