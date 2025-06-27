@@ -26,8 +26,8 @@ function App() {
           path="/*"
           element={<HomePageLayout darkMode={darkMode} setDarkMode={setDarkMode} />}
         />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/signin" element={<Signin />} />
+        <Route path="/signup" element={<Signup darkMode={darkMode} setDarkMode={setDarkMode} />} />
+        <Route path="/signin" element={<Signin darkMode={darkMode} setDarkMode={setDarkMode} />} />
         <Route path="/email-verified/:token" element={<EmailVerified />} />
       </Routes>
     </Router>
