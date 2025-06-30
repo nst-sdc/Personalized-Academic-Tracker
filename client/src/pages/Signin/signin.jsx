@@ -57,40 +57,52 @@ const Signin = ({ darkMode }) => {
 
   const togglePassword = () => setShowPassword(prev => !prev);
 
-  return (<div className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-300 ${darkMode ? "bg-[#18181b] text-white" : "bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-100 text-black"}`}>
-    <div className={`w-full max-w-6xl rounded-3xl shadow-2xl overflow-hidden transition-colors duration-300 ${darkMode ? "bg-black text-white" : "bg-white text-black"}`}>
-      <div className="flex flex-col lg:flex-row">
+  return (
+    <div
+      className={`min-h-screen flex items-center justify-center p-2 sm:p-4 transition-colors duration-300 ${
+        darkMode
+          ? "bg-[#18181b] text-white"
+          : "bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-100 text-black"
+      }`}
+    >
+      <div
+        className={`w-full max-w-6xl rounded-3xl shadow-2xl overflow-hidden transition-colors duration-300 ${
+          darkMode ? "bg-black text-white" : "bg-white text-black"
+        } flex flex-col lg:flex-row`}
+      >
         {/* Left Image Section */}
-        <div className="lg:w-1/2 bg-gradient-to-br from-blue-600 via-sky-600 to-indigo-700 p-12 flex flex-col justify-center items-center text-white relative">
+        <div className="lg:w-1/2 w-full sm-block bg-gradient-to-br from-blue-600 via-sky-600 to-indigo-700 p-4 sm:p-8 lg:p-12 flex flex-col justify-center items-center text-white relative">
           <div className="absolute inset-0 bg-black/20" />
           <div className="relative z-10 text-center">
             <img
               src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
               alt="Illustration"
-              className="w-64 h-64 object-contain mx-auto mb-6"
+              className="w-40 h-40 sm:w-64 sm:h-64 object-contain mx-auto mb-4 sm:mb-6"
             />
-            <h2 className="text-4xl font-bold mb-4">Welcome Back!</h2>
-            <p className="text-blue-100 text-lg">
+            <h2 className="text-2xl sm:text-4xl font-bold mb-2 sm:mb-4">Welcome Back!</h2>
+            <p className="text-blue-100 text-base sm:text-lg">
               Stay organized with your academic goals. Sign in and track your success!
             </p>
           </div>
         </div>
-  
+
         {/* Right Side Form Section */}
-        <div className="lg:w-1/2 p-12">
-          <div className="max-w-md mx-auto">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold mb-2">Sign In</h1>
-              <p className="text-gray-600 dark:text-gray-400">Enter your credentials to access your tracker</p>
+        <div className="lg:w-1/2 w-full p-4 sm:p-8 lg:p-12 flex items-center">
+          <div className="w-full max-w-md mx-auto">
+            <div className="text-center mb-6 sm:mb-8">
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">Sign In</h1>
+              <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+                Enter your credentials to access your tracker
+              </p>
             </div>
-  
+
             {error && (
-              <div className="bg-red-50 dark:bg-red-900 text-red-700 dark:text-red-200 border border-red-200 dark:border-red-700 p-4 rounded-lg mb-6 text-center text-sm">
+              <div className="bg-red-50 dark:bg-red-900 text-red-700 dark:text-red-200 border border-red-200 dark:border-red-700 p-3 sm:p-4 rounded-lg mb-4 sm:mb-6 text-center text-xs sm:text-sm">
                 {error}
               </div>
             )}
-  
-            <form onSubmit={handleLogin} className="space-y-5">
+
+            <form onSubmit={handleLogin} className="space-y-4 sm:space-y-5">
               <div className="relative">
                 <Mail size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -101,14 +113,14 @@ const Signin = ({ darkMode }) => {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className={`w-full pl-10 pr-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 border ${
+                  className={`w-full pl-10 pr-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 border text-sm sm:text-base ${
                     darkMode
                       ? "bg-black text-white placeholder-gray-400 border-gray-600"
                       : "bg-white text-black border-gray-300"
                   }`}
                 />
               </div>
-  
+
               <div className="relative">
                 <Lock size={20} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
@@ -119,7 +131,7 @@ const Signin = ({ darkMode }) => {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className={`w-full pl-10 pr-12 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 border ${
+                  className={`w-full pl-10 pr-12 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 border text-sm sm:text-base ${
                     darkMode
                       ? "bg-black text-white placeholder-gray-400 border-gray-600"
                       : "bg-white text-black border-gray-300"
@@ -134,8 +146,8 @@ const Signin = ({ darkMode }) => {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-  
-              <div className="flex justify-between items-center text-sm text-gray-600 dark:text-gray-400">
+
+              <div className="flex flex-col sm:flex-row justify-between items-center text-xs sm:text-sm text-gray-600 dark:text-gray-400 gap-2">
                 <label className="flex items-center space-x-2">
                   <input
                     type="checkbox"
@@ -149,19 +161,19 @@ const Signin = ({ darkMode }) => {
                   Forgot password?
                 </Link>
               </div>
-  
+
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition duration-200 disabled:opacity-50"
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6 rounded-lg font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transition duration-200 disabled:opacity-50"
               >
                 {loading ? 'Signing In...' : 'Sign In'}
               </button>
             </form>
-  
-            <div className="text-center my-6 text-gray-500 dark:text-gray-400 text-sm">Or login with</div>
-  
-            <div className="grid grid-cols-4 gap-4 mb-6">
+
+            <div className="text-center my-4 sm:my-6 text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Or login with</div>
+
+            <div className="grid grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
               {[
                 { icon: googleIcon, alt: "Google", onClick: () => alert("Google login") },
                 { icon: facebookIcon, alt: "Facebook", onClick: () => alert("Facebook login") },
@@ -178,12 +190,12 @@ const Signin = ({ darkMode }) => {
                       : "bg-gray-100 hover:bg-gray-200 text-black"
                   }`}
                 >
-                  <img src={icon} alt={alt} className="w-6 h-6" />
+                  <img src={icon} alt={alt} className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
               ))}
             </div>
-  
-            <p className="text-center text-gray-600 dark:text-gray-400 text-sm">
+
+            <p className="text-center text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
               Don’t have an account?
               <Link to="/signup" className="text-blue-600 hover:underline ml-1 font-medium">
                 Create one
@@ -193,8 +205,6 @@ const Signin = ({ darkMode }) => {
         </div>
       </div>
     </div>
-  </div>
-  
   );
 };
 

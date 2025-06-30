@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, User, Phone, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
+import { AiOutlineConsoleSql } from "react-icons/ai";
 
 const Signup = ({ darkMode }) => {
   const [formData, setFormData] = useState({
@@ -63,6 +64,8 @@ const Signup = ({ darkMode }) => {
     setLoading(true);
     setMessage({ type: "", text: "" });
 
+    console.log(formData);
+
     try {
       await new Promise((res) => setTimeout(res, 1500));
       setMessage({
@@ -90,7 +93,7 @@ const Signup = ({ darkMode }) => {
 
   return (
     <div
-      className={`min-h-screen flex items-center justify-center p-4 transition-colors duration-300 ${
+      className={`min-h-screen flex items-center justify-center p-2 sm:p-4 transition-colors duration-300 ${
         darkMode
           ? "bg-[#18181b] text-white"
           : "bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-100 text-black"
@@ -98,7 +101,7 @@ const Signup = ({ darkMode }) => {
     >
       <div className={`w-full max-w-6xl rounded-3xl shadow-2xl overflow-hidden transition-colors duration-300 ${darkMode ? "bg-black text-white" : "bg-white text-black"}`}>
         <div className="flex flex-col lg:flex-row">
-          <div className="lg:w-1/2 hidden lg:block">
+          <div className="lg:w-1/2 w-full min-h-64 sm-block">
             <img
               src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
               alt="Academic Tracker"
@@ -106,17 +109,17 @@ const Signup = ({ darkMode }) => {
             />
           </div>
 
-          <div className="lg:w-1/2 p-12">
+          <div className="lg:w-1/2 p-4 sm:p-8 lg:p-12">
             <div className="max-w-md mx-auto">
-              <div className="text-center mb-8">
-                <h1 className="text-3xl font-bold mb-2">Create Your Tracker Account</h1>
-                <p className="text-gray-500 dark:text-gray-400">
+              <div className="text-center mb-6 sm:mb-8">
+                <h1 className="text-2xl sm:text-3xl font-bold mb-2">Create Your Tracker Account</h1>
+                <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">
                   Start organizing your academic journey today.
                 </p>
               </div>
 
               {message.text && (
-                <div className={`p-4 rounded-lg mb-6 text-center border ${
+                <div className={`p-3 sm:p-4 rounded-lg mb-4 sm:mb-6 text-center border text-xs sm:text-sm ${
                   message.type === "success"
                     ? darkMode
                       ? "bg-green-900 text-green-200 border-green-700"
@@ -129,9 +132,9 @@ const Signup = ({ darkMode }) => {
                 </div>
               )}
 
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
                 {/* First & Last Name */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                   {["firstName", "lastName"].map((name, i) => (
                     <div className="relative" key={name}>
                       <User size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -142,7 +145,7 @@ const Signup = ({ darkMode }) => {
                         value={formData[name]}
                         onChange={handleChange}
                         disabled={loading}
-                        className={`w-full pl-10 pr-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 border ${
+                        className={`w-full pl-10 pr-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 border text-sm sm:text-base ${
                           darkMode ? "bg-black text-white placeholder-gray-400 border-gray-600" : "bg-white text-black border-gray-300"
                         }`}
                       />
@@ -160,7 +163,7 @@ const Signup = ({ darkMode }) => {
                     value={formData.email}
                     onChange={handleChange}
                     disabled={loading}
-                    className={`w-full pl-10 pr-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 border ${
+                    className={`w-full pl-10 pr-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 border text-sm sm:text-base ${
                       darkMode ? "bg-black text-white placeholder-gray-400 border-gray-600" : "bg-white text-black border-gray-300"
                     }`}
                   />
@@ -175,7 +178,7 @@ const Signup = ({ darkMode }) => {
                     value={formData.dob}
                     onChange={handleChange}
                     disabled={loading}
-                    className={`w-full pl-10 pr-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 border ${
+                    className={`w-full pl-10 pr-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 border text-sm sm:text-base ${
                       darkMode ? "bg-black text-white placeholder-gray-400 border-gray-600" : "bg-white text-black border-gray-300"
                     }`}
                   />
@@ -188,7 +191,7 @@ const Signup = ({ darkMode }) => {
                     value={formData.countryCode}
                     onChange={handleChange}
                     disabled={loading}
-                    className={`pl-3 pr-2 py-3 border rounded-l-lg ${
+                    className={`pl-2 sm:pl-3 pr-1 sm:pr-2 py-3 border rounded-l-lg text-xs sm:text-sm ${
                       darkMode ? "bg-black text-white border-gray-600" : "bg-gray-50 text-black border-gray-300"
                     }`}
                   >
@@ -201,7 +204,7 @@ const Signup = ({ darkMode }) => {
                     value={formData.phone}
                     onChange={handleChange}
                     disabled={loading}
-                    className={`flex-1 px-4 py-3 border border-l-0 rounded-r-lg focus:ring-2 focus:ring-blue-500 ${
+                    className={`flex-1 px-3 sm:px-4 py-3 border border-l-0 rounded-r-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base ${
                       darkMode ? "bg-black text-white placeholder-gray-400 border-gray-600" : "bg-white text-black border-gray-300"
                     }`}
                   />
@@ -217,7 +220,7 @@ const Signup = ({ darkMode }) => {
                     value={formData.password}
                     onChange={handleChange}
                     disabled={loading}
-                    className={`w-full pl-10 pr-12 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 border ${
+                    className={`w-full pl-10 pr-12 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 border text-sm sm:text-base ${
                       darkMode ? "bg-black text-white placeholder-gray-400 border-gray-600" : "bg-white text-black border-gray-300"
                     }`}
                   />
@@ -225,6 +228,7 @@ const Signup = ({ darkMode }) => {
                     type="button"
                     onClick={togglePassword}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                    disabled={loading}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -234,20 +238,20 @@ const Signup = ({ darkMode }) => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transition duration-200 disabled:opacity-50"
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6 rounded-lg font-semibold text-base sm:text-lg shadow-lg hover:shadow-xl transition duration-200 disabled:opacity-50"
                 >
                   {loading ? (
                     <div className="flex items-center justify-center space-x-2">
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      <span>Creating Account...</span>
+                      <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-sm sm:text-base">Creating Account...</span>
                     </div>
                   ) : (
                     "Create Account"
                   )}
                 </button>
 
-                <div className="text-center mt-6">
-                  <p className="text-gray-600 dark:text-gray-400">
+                <div className="text-center mt-4 sm:mt-6">
+                  <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
                     Already have an account?
                     <Link to="/signin" className="text-blue-600 hover:text-blue-800 font-semibold ml-1">
                       Sign In
