@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import './Signup.css'; // Reuse styles
 
 const EmailVerified = () => {
     const { token } = useParams(); // Get token from the URL
