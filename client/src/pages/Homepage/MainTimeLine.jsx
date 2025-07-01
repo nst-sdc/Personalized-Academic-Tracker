@@ -3,6 +3,7 @@ import EventCard from "./EventCard";
 import { MdHome, MdSearch, MdPieChart, MdAccessTime, MdPerson } from "react-icons/md";
 import { IoMdArrowDropdown } from "react-icons/io";
 import { FaCircle, FaMinus } from "react-icons/fa";
+import AddEventModal from "./AddEventModal";
 
 // Timeline starts at 11:00
 const timelineStartHour = 11;
@@ -43,6 +44,27 @@ const events = [
 
 const MainTimeLine = ({ darkMode }) => {
   const [activeNav, setActiveNav] = useState("Home");
+  const [modalOpen, setModalOpen] = useState(false);
+
+  // Add event handler
+  const handleAddEvent = async (eventData) => {
+    try {
+      const res = await fetch("/api/events", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(eventData),
+      });
+      if (res.ok) {
+        setModalOpen(false);
+        // Optionally: fetch events from backend and update UI
+      } else {
+        alert("Failed to add event");
+      }
+    } catch (err) {
+      alert("Error adding event");
+    }
+  };
+
   return (
     <div className={`flex-1 flex flex-col ${darkMode ? "bg-black text-white" : "bg-white text-black"}`}>
       
@@ -120,10 +142,16 @@ const MainTimeLine = ({ darkMode }) => {
         <button
           className="fixed bottom-8 right-8 bg-[#FF5722] text-white px-6 py-3 rounded-full shadow-lg flex items-center space-x-2 z-20"
           aria-label="Add new event"
+          onClick={() => setModalOpen(true)}
         >
           <span className="text-2xl font-light leading-none">+</span>
           <span className="text-[15px] font-medium">Add Event</span>
         </button>
+        <AddEventModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          onSave={handleAddEvent}
+        />
       </main>
     </div>
   );
