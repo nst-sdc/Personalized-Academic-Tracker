@@ -1,9 +1,8 @@
 import React, { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, User, Phone, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
-import { AiOutlineConsoleSql } from "react-icons/ai";
 
-const Signup = ({ darkMode }) => {
+const Signup = ({ darkMode = false }) => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -32,28 +31,46 @@ const Signup = ({ darkMode }) => {
   const validateForm = () => {
     const { firstName, lastName, email, dob, phone, password } = formData;
 
-    if (!firstName.trim() || firstName.trim().length < 2)
-      return setMessage({ type: "error", text: "First name must be at least 2 characters long" }), false;
+    if (!firstName.trim() || firstName.trim().length < 2) {
+      setMessage({ type: "error", text: "First name must be at least 2 characters long" });
+      return false;
+    }
 
-    if (!lastName.trim() || lastName.trim().length < 2)
-      return setMessage({ type: "error", text: "Last name must be at least 2 characters long" }), false;
+    if (!lastName.trim() || lastName.trim().length < 2) {
+      setMessage({ type: "error", text: "Last name must be at least 2 characters long" });
+      return false;
+    }
 
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-      return setMessage({ type: "error", text: "Please enter a valid email address" }), false;
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setMessage({ type: "error", text: "Please enter a valid email address" });
+      return false;
+    }
 
-    if (!dob) return setMessage({ type: "error", text: "Date of birth is required" }), false;
+    if (!dob) {
+      setMessage({ type: "error", text: "Date of birth is required" });
+      return false;
+    }
 
     const age = new Date().getFullYear() - new Date(dob).getFullYear();
-    if (age < 13) return setMessage({ type: "error", text: "You must be at least 13 years old to sign up" }), false;
+    if (age < 13) {
+      setMessage({ type: "error", text: "You must be at least 13 years old to sign up" });
+      return false;
+    }
 
-    if (!/^[0-9]{10,15}$/.test(phone.replace(/\s+/g, "")))
-      return setMessage({ type: "error", text: "Please enter a valid phone number (10–15 digits)" }), false;
+    if (!/^[0-9]{10,15}$/.test(phone.replace(/\s+/g, ""))) {
+      setMessage({ type: "error", text: "Please enter a valid phone number (10–15 digits)" });
+      return false;
+    }
 
-    if (password.length < 8)
-      return setMessage({ type: "error", text: "Password must be at least 8 characters long" }), false;
+    if (password.length < 8) {
+      setMessage({ type: "error", text: "Password must be at least 8 characters long" });
+      return false;
+    }
 
-    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(password))
-      return setMessage({ type: "error", text: "Password must include uppercase, lowercase, number, and special character" }), false;
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(password)) {
+      setMessage({ type: "error", text: "Password must include uppercase, lowercase, number, and special character" });
+      return false;
+    }
 
     return true;
   };
@@ -64,44 +81,85 @@ const Signup = ({ darkMode }) => {
     setLoading(true);
     setMessage({ type: "", text: "" });
 
-    console.log(formData);
+    const requestData = {
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
+      email: formData.email.trim().toLowerCase(),
+      dob: formData.dob,
+      phone: formData.phone.replace(/\s+/g, ""),
+      countryCode: formData.countryCode,
+      password: formData.password,
+    };
 
     try {
-      await new Promise((res) => setTimeout(res, 1500));
-      setMessage({
-        type: "success",
-        text: "Account created successfully! Please check your email for verification.",
+      const response = await fetch('/api/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
       });
-      setFormData({
-        firstName: "",
-        lastName: "",
-        email: "",
-        dob: "",
-        countryCode: "+91",
-        phone: "",
-        password: "",
-      });
-    } catch {
-      setMessage({
-        type: "error",
-        text: "Something went wrong. Please try again.",
-      });
+
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Server returned non-JSON response');
+      }
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setMessage({
+          type: "success",
+          text: data.message || "Account created successfully! Please check your email for verification.",
+        });
+        setFormData({
+          firstName: "",
+          lastName: "",
+          email: "",
+          dob: "",
+          countryCode: "+91",
+          phone: "",
+          password: "",
+        });
+      } else {
+        let errorMessage = "Registration failed. Please try again.";
+        if (data.message) errorMessage = data.message;
+        else if (data.error) errorMessage = data.error;
+        else if (data.errors && Array.isArray(data.errors)) errorMessage = data.errors.join(', ');
+        else if (typeof data === 'string') errorMessage = data;
+
+        setMessage({
+          type: "error",
+          text: errorMessage,
+        });
+
+        if (data.field) {
+          const fieldElement = document.querySelector(`[name="${data.field}"]`);
+          if (fieldElement) fieldElement.focus();
+        }
+      }
+    } catch (error) {
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        setMessage({ type: "error", text: "Unable to connect to server. Please check your internet connection." });
+      } else if (error.name === 'AbortError') {
+        setMessage({ type: "error", text: "Request timed out. Please try again." });
+      } else if (error.message.includes('non-JSON response')) {
+        setMessage({ type: "error", text: "Server error. Please try again later." });
+      } else {
+        setMessage({ type: "error", text: "An unexpected error occurred. Please try again." });
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      className={`min-h-screen flex items-center justify-center p-2 sm:p-4 transition-colors duration-300 ${
-        darkMode
-          ? "bg-[#18181b] text-white"
-          : "bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-100 text-black"
-      }`}
-    >
+    <div className={`min-h-screen flex items-center justify-center p-2 sm:p-4 transition-colors duration-300 ${
+      darkMode ? "bg-[#18181b] text-white" : "bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-100 text-black"
+    }`}>
       <div className={`w-full max-w-6xl rounded-3xl shadow-2xl overflow-hidden transition-colors duration-300 ${darkMode ? "bg-black text-white" : "bg-white text-black"}`}>
         <div className="flex flex-col lg:flex-row">
-          <div className="lg:w-1/2 w-full min-h-64 sm-block">
+          <div className="lg:w-1/2 w-full min-h-64">
             <img
               src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
               alt="Academic Tracker"
@@ -121,19 +179,14 @@ const Signup = ({ darkMode }) => {
               {message.text && (
                 <div className={`p-3 sm:p-4 rounded-lg mb-4 sm:mb-6 text-center border text-xs sm:text-sm ${
                   message.type === "success"
-                    ? darkMode
-                      ? "bg-green-900 text-green-200 border-green-700"
-                      : "bg-green-50 text-green-700 border-green-200"
-                    : darkMode
-                      ? "bg-red-900 text-red-200 border-red-700"
-                      : "bg-red-50 text-red-700 border-red-200"
+                    ? darkMode ? "bg-green-900 text-green-200 border-green-700" : "bg-green-50 text-green-700 border-green-200"
+                    : darkMode ? "bg-red-900 text-red-200 border-red-700" : "bg-red-50 text-red-700 border-red-200"
                 }`}>
                   {message.text}
                 </div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-                {/* First & Last Name */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                   {["firstName", "lastName"].map((name, i) => (
                     <div className="relative" key={name}>
@@ -153,7 +206,6 @@ const Signup = ({ darkMode }) => {
                   ))}
                 </div>
 
-                {/* Email */}
                 <div className="relative">
                   <Mail size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
@@ -169,7 +221,6 @@ const Signup = ({ darkMode }) => {
                   />
                 </div>
 
-                {/* DOB */}
                 <div className="relative">
                   <Calendar size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
@@ -184,7 +235,6 @@ const Signup = ({ darkMode }) => {
                   />
                 </div>
 
-                {/* Phone */}
                 <div className="flex">
                   <select
                     name="countryCode"
@@ -196,6 +246,8 @@ const Signup = ({ darkMode }) => {
                     }`}
                   >
                     <option value="+91">🇮🇳 +91</option>
+                    <option value="+1">🇺🇸 +1</option>
+                    <option value="+44">🇬🇧 +44</option>
                   </select>
                   <input
                     type="text"
@@ -210,7 +262,6 @@ const Signup = ({ darkMode }) => {
                   />
                 </div>
 
-                {/* Password */}
                 <div className="relative">
                   <Lock size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
@@ -234,7 +285,10 @@ const Signup = ({ darkMode }) => {
                   </button>
                 </div>
 
-                {/* Submit */}
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Password must contain: 8+ characters, uppercase, lowercase, number, and special character
+                </div>
+
                 <button
                   type="submit"
                   disabled={loading}

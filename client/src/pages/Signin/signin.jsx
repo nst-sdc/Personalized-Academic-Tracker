@@ -29,16 +29,69 @@ const Signin = ({ darkMode }) => {
     if (error) setError('');
   };
 
+  // Validate form
+  const validateForm = () => {
+    if (!formData.email || !formData.password) {
+      setError('Please fill in all fields');
+      return false;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      setError('Please enter a valid email address');
+      return false;
+    }
+
+    return true;
+  };
+
+  // Handle form submission
+  // Enhanced handleLogin function for Signin.jsx - Add this to handle unverified emails
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!formData.email || !formData.password) return setError('Please fill in all fields');
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) return setError('Enter a valid email address');
+
+    if (!validateForm()) return;
 
     setLoading(true);
+    setError('');
+
     try {
-      console.log("Login data:", formData);
-      setTimeout(() => {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          password: formData.password
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        // Store token in localStorage or sessionStorage based on remember me
+        const storage = rememberMe ? localStorage : sessionStorage;
+        storage.setItem('authToken', data.token);
+        storage.setItem('user', JSON.stringify(data.user));
+
+        // Store expiry information
+        if (data.expiresIn) {
+          const expiryTime = new Date();
+          // Parse expiry time (e.g., "7d" -> 7 days from now)
+          if (data.expiresIn.includes('d')) {
+            const days = parseInt(data.expiresIn.replace('d', ''));
+            expiryTime.setDate(expiryTime.getDate() + days);
+          } else if (data.expiresIn.includes('h')) {
+            const hours = parseInt(data.expiresIn.replace('h', ''));
+            expiryTime.setHours(expiryTime.getHours() + hours);
+          }
+          storage.setItem('tokenExpiry', expiryTime.toISOString());
+        }
+
+        // Handle remember me preferences
         if (rememberMe) {
           localStorage.setItem('rememberMe', 'true');
           localStorage.setItem('userEmail', formData.email);
@@ -46,29 +99,81 @@ const Signin = ({ darkMode }) => {
           localStorage.removeItem('rememberMe');
           localStorage.removeItem('userEmail');
         }
-        navigate('/dashboard');
-      }, 1500);
-    } catch {
-      setError('Login failed');
+
+        // Show success message briefly before redirect
+        console.log('Login successful:', data.message);
+
+        // Redirect to dashboard or home page
+        navigate('/dashboard', { replace: true });
+
+      } else {
+        // Handle specific error cases
+        if (data.code === 'EMAIL_NOT_VERIFIED') {
+          setError(`${data.message} Would you like us to resend the verification email?`);
+          // Optionally show a "Resend Email" button here
+        } else {
+          setError(data.message || 'Login failed. Please try again.');
+        }
+      }
+
+    } catch (error) {
+      console.error('Login error:', error);
+
+      // Handle different types of errors
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        setError('Unable to connect to server. Please check your internet connection.');
+      } else if (error.name === 'AbortError') {
+        setError('Request timed out. Please try again.');
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
+  };
+
+  // Handle social login (placeholder functions)
+  const handleGoogleLogin = () => {
+    console.log('Google login clicked');
+    // TODO: Implement Google OAuth login
+    setError('Google login is not available yet. Please use email/password login.');
+  };
+
+  const handleFacebookLogin = () => {
+    console.log('Facebook login clicked');
+    // TODO: Implement Facebook OAuth login
+    setError('Facebook login is not available yet. Please use email/password login.');
+  };
+
+  const handleAppleLogin = () => {
+    console.log('Apple login clicked');
+    // TODO: Implement Apple OAuth login
+    setError('Apple login is not available yet. Please use email/password login.');
+  };
+
+  const handleMobileLogin = () => {
+    console.log('Mobile login clicked');
+    // TODO: Implement mobile/SMS login
+    setError('Mobile login is not available yet. Please use email/password login.');
+  };
+
+  // Toggle password visibility
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
 
   const togglePassword = () => setShowPassword(prev => !prev);
 
   return (
     <div
-      className={`min-h-screen flex items-center justify-center p-2 sm:p-4 transition-colors duration-300 ${
-        darkMode
+      className={`min-h-screen flex items-center justify-center p-2 sm:p-4 transition-colors duration-300 ${darkMode
           ? "bg-[#18181b] text-white"
           : "bg-gradient-to-br from-blue-50 via-sky-50 to-indigo-100 text-black"
-      }`}
+        }`}
     >
       <div
-        className={`w-full max-w-6xl rounded-3xl shadow-2xl overflow-hidden transition-colors duration-300 ${
-          darkMode ? "bg-black text-white" : "bg-white text-black"
-        } flex flex-col lg:flex-row`}
+        className={`w-full max-w-6xl rounded-3xl shadow-2xl overflow-hidden transition-colors duration-300 ${darkMode ? "bg-black text-white" : "bg-white text-black"
+          } flex flex-col lg:flex-row`}
       >
         {/* Left Image Section */}
         <div className="lg:w-1/2 w-full sm-block bg-gradient-to-br from-blue-600 via-sky-600 to-indigo-700 p-4 sm:p-8 lg:p-12 flex flex-col justify-center items-center text-white relative">
@@ -113,11 +218,10 @@ const Signin = ({ darkMode }) => {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className={`w-full pl-10 pr-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 border text-sm sm:text-base ${
-                    darkMode
+                  className={`w-full pl-10 pr-4 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 border text-sm sm:text-base ${darkMode
                       ? "bg-black text-white placeholder-gray-400 border-gray-600"
                       : "bg-white text-black border-gray-300"
-                  }`}
+                    }`}
                 />
               </div>
 
@@ -131,11 +235,10 @@ const Signin = ({ darkMode }) => {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className={`w-full pl-10 pr-12 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 border text-sm sm:text-base ${
-                    darkMode
+                  className={`w-full pl-10 pr-12 py-3 rounded-lg focus:ring-2 focus:ring-blue-500 border text-sm sm:text-base ${darkMode
                       ? "bg-black text-white placeholder-gray-400 border-gray-600"
                       : "bg-white text-black border-gray-300"
-                  }`}
+                    }`}
                 />
                 <button
                   type="button"
@@ -175,20 +278,19 @@ const Signin = ({ darkMode }) => {
 
             <div className="grid grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
               {[
-                { icon: googleIcon, alt: "Google", onClick: () => alert("Google login") },
-                { icon: facebookIcon, alt: "Facebook", onClick: () => alert("Facebook login") },
-                { icon: appleIcon, alt: "Apple", onClick: () => alert("Apple login") },
-                { icon: mobileIcon, alt: "Mobile", onClick: () => alert("Mobile login") },
+                { icon: googleIcon, alt: "Google", onClick: () => handleGoogleLogin() },
+                { icon: facebookIcon, alt: "Facebook", onClick: () => handleFacebookLogin() },
+                { icon: appleIcon, alt: "Apple", onClick: () => handleAppleLogin() },
+                { icon: mobileIcon, alt: "Mobile", onClick: () => handleMobileLogin() },
               ].map(({ icon, alt, onClick }, idx) => (
                 <button
                   key={idx}
                   onClick={onClick}
                   disabled={loading}
-                  className={`rounded-lg p-2 flex justify-center transition-colors duration-200 ${
-                    darkMode
+                  className={`rounded-lg p-2 flex justify-center transition-colors duration-200 ${darkMode
                       ? "bg-gray-800 hover:bg-gray-700 text-white"
                       : "bg-gray-100 hover:bg-gray-200 text-black"
-                  }`}
+                    }`}
                 >
                   <img src={icon} alt={alt} className="w-5 h-5 sm:w-6 sm:h-6" />
                 </button>
@@ -197,7 +299,7 @@ const Signin = ({ darkMode }) => {
 
             <p className="text-center text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
               Don’t have an account?
-              <Link to="/signup" className="text-blue-600 hover:underline ml-1 font-medium">
+              <Link to="/signup" className="text-blue-600 hover:text-blue-800 font-semibold ml-1">
                 Create one
               </Link>
             </p>
