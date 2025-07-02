@@ -274,29 +274,6 @@ const Signin = ({ darkMode }) => {
               </button>
             </form>
 
-            <div className="text-center my-4 sm:my-6 text-gray-500 dark:text-gray-400 text-xs sm:text-sm">Or login with</div>
-
-            <div className="grid grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-6">
-              {[
-                { icon: googleIcon, alt: "Google", onClick: () => handleGoogleLogin() },
-                { icon: facebookIcon, alt: "Facebook", onClick: () => handleFacebookLogin() },
-                { icon: appleIcon, alt: "Apple", onClick: () => handleAppleLogin() },
-                { icon: mobileIcon, alt: "Mobile", onClick: () => handleMobileLogin() },
-              ].map(({ icon, alt, onClick }, idx) => (
-                <button
-                  key={idx}
-                  onClick={onClick}
-                  disabled={loading}
-                  className={`rounded-lg p-2 flex justify-center transition-colors duration-200 ${darkMode
-                      ? "bg-gray-800 hover:bg-gray-700 text-white"
-                      : "bg-gray-100 hover:bg-gray-200 text-black"
-                    }`}
-                >
-                  <img src={icon} alt={alt} className="w-5 h-5 sm:w-6 sm:h-6" />
-                </button>
-              ))}
-            </div>
-
             <p className="text-center text-gray-600 dark:text-gray-400 text-xs sm:text-sm">
               Don’t have an account?
               <Link to="/signup" className="text-blue-600 hover:text-blue-800 font-semibold ml-1">
