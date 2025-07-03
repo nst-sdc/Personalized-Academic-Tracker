@@ -10,6 +10,8 @@ import Settings from "../Settings";
 function HomePageLayout({ darkMode, setDarkMode }) {
   const location = useLocation();
   const [activeItem, setActiveItem] = useState("home");
+  // Shared events state
+  const [events, setEvents] = useState([]);
 
   const showDateCol =
     (location.pathname === "/" || location.pathname === "/calendar");
@@ -27,14 +29,14 @@ function HomePageLayout({ darkMode, setDarkMode }) {
           {/* Left date column (optional) */}
           {showDateCol && (
             <div className="w-auto">
-              <LeftDateColoumn darkMode={darkMode} />
+              <LeftDateColoumn darkMode={darkMode} events={events} setEvents={setEvents} />
             </div>
           )}
 
           {/* Main Content Routing */}
           <div className="flex-1 overflow-auto">
             <Routes>
-              <Route path="/" element={<MainTimeline darkMode={darkMode} />} />
+              <Route path="/" element={<MainTimeline darkMode={darkMode} events={events} setEvents={setEvents} />} />
               <Route path="/calendar" element={<Calendar darkMode={darkMode} />} />
               <Route path="/settings" element={<Settings darkMode={darkMode} />} />
               <Route

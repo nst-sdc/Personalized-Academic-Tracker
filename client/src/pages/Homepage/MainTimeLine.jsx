@@ -4,6 +4,7 @@ import { MdHome, MdSearch, MdPieChart, MdAccessTime, MdPerson } from "react-icon
 import { IoMdArrowDropdown } from "react-icons/io";
 import { FaCircle, FaMinus } from "react-icons/fa";
 import AddEventModal from "./AddEventModal";
+import EditEventForm from "./EditEventForm";
 
 // Timeline starts at 11:00
 const timelineStartHour = 11;
@@ -17,128 +18,87 @@ function calculateTopFromTime(timeStr) {
 
 const times = ["11:00", "12:00", "13:00", "14:00", "15:00"];
 
-const events = [
-  {
-    title: "Ergonomics",
-    start: "11:00",
-    end: "12:00",
-    duration: "1h",
-    height: 152,
-    bg: "bg-[#FFF4E6]",
-    border: "border-[#FFB26B]",
-    textColor: "text-[#FB8C00]",
-    avatars: 2,
-  },
-  {
-    title: "Tales of Women in Design",
-    start: "13:15",
-    end: "15:00",
-    duration: "1h 45m",
-    height: 194,
-    bg: "bg-[#FFE6EB]",
-    border: "border-[#FF829E]",
-    textColor: "text-[#E91E63]",
-    avatars: 3,
-  },
-];
+function isToday(date) {
+  const d = new Date(date);
+  const now = new Date();
+  return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+}
 
-const MainTimeLine = ({ darkMode }) => {
+function formatTime(date) {
+  return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+const MainTimeLine = ({ darkMode, events, setEvents }) => {
   const [activeNav, setActiveNav] = useState("Home");
   const [modalOpen, setModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [editMode, setEditMode] = useState(false);
 
-  // Add event handler
+  // Add event handler (shared state)
   const handleAddEvent = async (eventData) => {
-    try {
-      const res = await fetch("/api/events", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(eventData),
-      });
-      if (res.ok) {
-        setModalOpen(false);
-        // Optionally: fetch events from backend and update UI
-      } else {
-        alert("Failed to add event");
-      }
-    } catch (err) {
-      alert("Error adding event");
-    }
+    setEvents(prev => [...prev, { ...eventData, id: Date.now() }]);
+    setModalOpen(false);
   };
+
+  // Edit event handler
+  const handleEditEvent = (updatedEvent) => {
+    setEvents(prev => prev.map(ev => ev.id === updatedEvent.id ? updatedEvent : ev));
+    setSelectedEvent(null);
+    setEditMode(false);
+  };
+
+  // Delete event handler
+  const handleDeleteEvent = (id) => {
+    setEvents(prev => prev.filter(ev => ev.id !== id));
+    setSelectedEvent(null);
+    setEditMode(false);
+  };
+
+  // Only show today's events, sorted by start time
+  const todayEvents = events
+    .filter(ev => ev.start && isToday(ev.start))
+    .sort((a, b) => new Date(a.start) - new Date(b.start));
 
   return (
     <div className={`flex-1 flex flex-col ${darkMode ? "bg-black text-white" : "bg-white text-black"}`}>
-      
-      {/* Timeline Area */}
-      <main className={`relative flex-1 overflow-y-auto ${darkMode ? "bg-gray-" : "bg-Whhite"}`}
-      style= {{ height: 'calc(100vh - 100px)', minHeight: '600px'}}>
-
-        {/* Header */}
-        <div className="flex items-baseline pl-8 pt-6 pb-6">
-          <p className={`text-[32px] font-normal ${darkMode ? "text-gray-400" : "text-[#9E9E9E]"}`}>
-            10th,
-          </p>
-          <p className={`font-khula font-semibold text-[38px] ml-2 ${darkMode ? "text-white" : "text-black"}`}>
-            Monday
-          </p>
+      <main className="flex-1 overflow-y-auto pl-8 pr-4 py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Today's Timeline</h1>
+          <p className="text-lg text-gray-500 dark:text-gray-400">{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
-
-        {/* Time Labels */}
-        <div className={`absolute left-0 top-[100px] w-[90px] text-right text-sm font-medium z-10 ${darkMode ? "text-gray-400" : "text-[#757575]"}`}>
-          {times.map((time, index) => (
-            <div
-              key={time}
-              className="flex flex-col items-end justify-start"
-              style={{ height: `${60 * pixelsPerMinute}px` }}
-            >
-              <p className="mb-1">{time}</p>
-              {/* Replace small/mid dashes */}
-              {index !== times.length - 1 && (
-                <div className="flex flex-col justify-evenly h-full mt-2 pr-[4px] text-gray-400">
-                  <FaMinus className="opacity-50 text-[6px]" />
-                  <FaMinus className="text-[10px]" />
-                  <FaMinus className="opacity-50 text-[6px]" />
+        {todayEvents.length === 0 ? (
+          <div className="flex items-center justify-center h-40 text-lg font-semibold text-gray-400 dark:text-gray-500">No Events Today</div>
+        ) : (
+          <div className="space-y-8">
+            {todayEvents.map((event, idx) => {
+              const start = new Date(event.start);
+              const end = new Date(event.end);
+              const startStr = formatTime(start);
+              const endStr = formatTime(end);
+              return (
+                <div key={event.id} className="flex items-start gap-4 group cursor-pointer" onClick={() => { setSelectedEvent(event); setEditMode(false); }}>
+                  <div className="min-w-[64px] text-right pt-2">
+                    <span className="text-lg font-semibold text-blue-600 dark:text-blue-300">{startStr}</span>
+                  </div>
+                  <div className="flex-1">
+                    <EventCard
+                      title={event.title}
+                      start={startStr}
+                      end={endStr}
+                      duration={null}
+                      bgColor="bg-[#E3F2FD] dark:bg-[#1e293b]"
+                      borderColor="border-[#2196F3] dark:border-[#60a5fa]"
+                      textColor="text-[#1976D2] dark:text-[#60a5fa]"
+                      avatars={1}
+                      height={100}
+                      category={event.category}
+                    />
+                  </div>
                 </div>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Current Time Marker */}
-        <div
-          className="absolute left-[60px] flex items-center z-10"
-          style={{ top: `${100 + calculateTopFromTime("12:45")}px` }}
-        >
-          <FaMinus className="text-[#00BCD4] text-[12px]" />
-          <div className="bg-[#00BCD4] w-1 h-1 rounded-full ml-2 mr-3" />
-          <p className={`text-[28px] font-bold ${darkMode ? "text-white" : "text-black"}`}>12:45</p>
-          <div className="ml-3">
-            <p className="text-[12px] text-[#E91E63] leading-tight">Next event in</p>
-            <p className="text-[12px] text-[#E91E63] leading-tight">30m</p>
+              );
+            })}
           </div>
-        </div>
-
-        {/* Events */}
-        {events.map((event, idx) => (
-          <div
-            key={idx}
-            className="absolute left-[105px] z-10"
-            style={{ top: `${100 + calculateTopFromTime(event.start)}px` }}
-          >
-            <EventCard
-              title={event.title}
-              start={event.start}
-              end={event.end}
-              duration={event.duration}
-              bgColor={event.bg}
-              borderColor={event.border}
-              textColor={event.textColor}
-              avatars={event.avatars}
-              height={event.height}
-            />
-          </div>
-        ))}
-
-        {/* Add Event Button */}
+        )}
         <button
           className="fixed bottom-8 right-8 bg-[#FF5722] text-white px-6 py-3 rounded-full shadow-lg flex items-center space-x-2 z-20"
           aria-label="Add new event"
@@ -152,6 +112,34 @@ const MainTimeLine = ({ darkMode }) => {
           onClose={() => setModalOpen(false)}
           onSave={handleAddEvent}
         />
+        {/* Event Details/Edit Modal */}
+        {selectedEvent && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+            <div className="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 w-full max-w-md border-2 border-blue-200 dark:border-blue-900">
+              <button
+                className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-3xl transition-colors"
+                onClick={() => { setSelectedEvent(null); setEditMode(false); }}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+              {!editMode ? (
+                <>
+                  <h2 className="text-2xl font-bold mb-4 text-blue-700 dark:text-blue-200">{selectedEvent.title}</h2>
+                  <div className="mb-2 text-gray-700 dark:text-gray-200"><b>Category:</b> {selectedEvent.category}</div>
+                  <div className="mb-2 text-gray-700 dark:text-gray-200"><b>Description:</b> {selectedEvent.description || '—'}</div>
+                  <div className="mb-2 text-gray-700 dark:text-gray-200"><b>Time:</b> {formatTime(selectedEvent.start)} - {formatTime(selectedEvent.end)}</div>
+                  <div className="flex gap-2 mt-6">
+                    <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition" onClick={() => setEditMode(true)}>Edit</button>
+                    <button className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded transition" onClick={() => handleDeleteEvent(selectedEvent.id)}>Delete</button>
+                  </div>
+                </>
+              ) : (
+                <EditEventForm event={selectedEvent} onSave={handleEditEvent} onCancel={() => setEditMode(false)} />
+              )}
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
