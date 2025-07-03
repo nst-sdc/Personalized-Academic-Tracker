@@ -1,5 +1,39 @@
 import React from "react";
-import { motion } from "framer-motion"; // Add this import
+
+const categoryColors = {
+  Class: {
+    light: "bg-blue-100 text-blue-700",
+    dark: "dark:bg-blue-900 dark:text-blue-200"
+  },
+  Assignment: {
+    light: "bg-green-100 text-green-700",
+    dark: "dark:bg-green-900 dark:text-green-200"
+  },
+  Meeting: {
+    light: "bg-purple-100 text-purple-700",
+    dark: "dark:bg-purple-900 dark:text-purple-200"
+  },
+  Masterclass: {
+    light: "bg-yellow-100 text-yellow-800",
+    dark: "dark:bg-yellow-900 dark:text-yellow-100"
+  },
+  Quiz: {
+    light: "bg-pink-100 text-pink-700",
+    dark: "dark:bg-pink-900 dark:text-pink-200"
+  },
+  Contest: {
+    light: "bg-red-100 text-red-700",
+    dark: "dark:bg-red-900 dark:text-red-200"
+  },
+  Practice: {
+    light: "bg-teal-100 text-teal-700",
+    dark: "dark:bg-teal-900 dark:text-teal-200"
+  },
+  Other: {
+    light: "bg-gray-200 text-gray-700",
+    dark: "dark:bg-gray-800 dark:text-gray-200"
+  }
+};
 
 function EventCard({
   title,
@@ -9,61 +43,35 @@ function EventCard({
   bgColor,
   borderColor,
   textColor,
-  avatars,
-  height = 152,
-  index = 0, // Optional index for stagger effect
+  height = 100,
+  category,
 }) {
+  const color = categoryColors[category] || categoryColors["Class"];
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95, y: 20 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      whileHover={{
-        scale: 1.04,
-        boxShadow: "0 8px 32px rgba(0,0,0,0.18)",
-        borderColor: "#2563eb", // blue-600
-      }}
-      transition={{
-        duration: 0.4,
-        delay: index * 0.1,
-        ease: "easeOut",
-      }}
-      className={`rounded-[18px] border-[2px] border-dashed ${borderColor} ${bgColor} w-[236px] px-5 pt-4 pb-3 relative transition-shadow duration-200 hover:shadow-xl`}
-      style={{
-        height: `${height}px`,
-        boxShadow: '0px 4px 12px rgba(0,0,0,0.08)',
-      }}
-      >
-      {/* Title */}
-      <p className="text-[14px] font-semibold leading-snug mb-1 text-[#212121]">
-        {title}
-      </p>
-
-      {/* Time */}
-      <p className="text-[12px] text-[#757575] leading-none mb-4">
-        {start} – {end}
-      </p>
-
-      {/* Avatars */}
-      <div className="flex -space-x-2 mb-4">
-        {Array.from({ length: avatars }).map((_, index) => (
-          <div
-            key={index}
-            className="h-7 w-7 rounded-full border-2 border-white bg-gray-300 overflow-hidden flex-shrink-0"
-          >
-            <img
-              src={`https://via.placeholder.com/28?text=A${index + 1}`}
-              alt={`Avatar ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
-          </div>
-        ))}
+    <div
+      className={
+        `rounded-2xl border-0 px-6 py-4 shadow-lg flex flex-col gap-2 transition-colors duration-200 ` +
+        `bg-blue-50 dark:bg-blue-950` +
+        " min-w-[220px] max-w-full"
+      }
+      style={{ height }}
+    >
+      {/* Category Badge */}
+      {category && (
+        <span className={`self-end mb-1 ${color.light} ${color.dark} text-xs font-bold px-3 py-1 rounded-full shadow`}>
+          {category}
+        </span>
+      )}
+      {/* Title and Time */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-bold text-blue-700 dark:text-blue-200 truncate">{title}</h3>
+        <span className="text-xs font-semibold text-blue-600 dark:text-blue-300 ml-2">{start} - {end}</span>
       </div>
-
-      {/* Duration */}
-      <p className={`text-[12px] font-semibold absolute bottom-3 right-4 ${textColor}`}>
-        {duration}
-      </p>
-    </motion.div>
+      {/* Description or Duration */}
+      {duration && (
+        <div className="text-xs font-semibold text-blue-600 dark:text-blue-300 mt-1">{duration}</div>
+      )}
+    </div>
   );
 }
 
