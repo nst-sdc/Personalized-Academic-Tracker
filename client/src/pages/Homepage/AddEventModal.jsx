@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import api from "../../utils/api";
 
 const categories = [
   "Class",
@@ -19,22 +20,81 @@ export default function AddEventModal({ open, onClose, onSave }) {
   const [endTime, setEndTime] = useState("");
   const [category, setCategory] = useState(categories[0]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   if (!open) return null;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const start = date && startTime ? new Date(`${date}T${startTime}`) : null;
-    const end = date && endTime ? new Date(`${date}T${endTime}`) : null;
-    await onSave({ title, description, start, end, category });
-    setLoading(false);
-    setTitle("");
-    setDescription("");
-    setDate("");
-    setStartTime("");
-    setEndTime("");
-    setCategory(categories[0]);
+    setError("");
+    
+    try {
+      // Validate end time is after start time
+      if (startTime && endTime && startTime >= endTime) {
+        setError("End time must be after start time");
+        setLoading(false);
+        return;
+      }
+
+      // Create proper ISO date strings
+      const start = date && startTime ? new Date(`${date}T${startTime}:00.000Z`) : null;
+      const end = date && endTime ? new Date(`${date}T${endTime}:00.000Z`) : null;
+      
+      console.log("Sending event data:", {
+        title,
+        description,
+        start,
+        end,
+        category
+      });
+
+      const response = await api.post('/events', {
+        title: title.trim(),
+        description: description.trim(),
+        start,
+        end,
+        category
+      });
+      
+      console.log("Event created successfully:", response.data);
+      
+      // Call the onSave callback with the new event
+      onSave(response.data.data || response.data);
+      
+      // Reset form
+      setTitle("");
+      setDescription("");
+      setDate("");
+      setStartTime("");
+      setEndTime("");
+      setCategory(categories[0]);
+      setError("");
+      
+      // Close modal
+      onClose();
+      
+    } catch (error) {
+      console.error('Error creating event:', error);
+      
+      // Handle different types of errors
+      if (error.response) {
+        // Server responded with error status
+        const errorMessage = error.response.data?.message || 
+                            error.response.data?.error || 
+                            `Server error: ${error.response.status}`;
+        setError(errorMessage);
+        console.log("Server error response:", error.response.data);
+      } else if (error.request) {
+        // Network error
+        setError("Network error. Please check your connection.");
+      } else {
+        // Other error
+        setError("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,6 +108,13 @@ export default function AddEventModal({ open, onClose, onSave }) {
           &times;
         </button>
         <h2 className="text-3xl font-extrabold mb-8 text-center tracking-tight text-blue-700 dark:text-blue-200 drop-shadow-sm">Add New Event</h2>
+        
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-xl">
+            {error}
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">Title</label>
@@ -58,6 +125,7 @@ export default function AddEventModal({ open, onClose, onSave }) {
               onChange={e => setTitle(e.target.value)}
               required
               placeholder="Event title"
+              maxLength={100}
             />
           </div>
           <div>
@@ -68,6 +136,7 @@ export default function AddEventModal({ open, onClose, onSave }) {
               onChange={e => setDescription(e.target.value)}
               rows={2}
               placeholder="Event description (optional)"
+              maxLength={500}
             />
           </div>
           <div>
@@ -94,6 +163,7 @@ export default function AddEventModal({ open, onClose, onSave }) {
               value={date}
               onChange={e => setDate(e.target.value)}
               required
+              min={new Date().toISOString().split('T')[0]}
             />
           </div>
           <div className="flex flex-col sm:flex-row gap-4">
@@ -136,4 +206,4 @@ export default function AddEventModal({ open, onClose, onSave }) {
       </div>
     </div>
   );
-} 
+}
