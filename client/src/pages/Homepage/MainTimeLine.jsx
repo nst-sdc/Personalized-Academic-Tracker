@@ -5,6 +5,7 @@ import { IoMdArrowDropdown } from "react-icons/io";
 import { FaCircle, FaMinus } from "react-icons/fa";
 import AddEventModal from "./AddEventModal";
 import EditEventForm from "./EditEventForm";
+import api from "../../utils/api";
 
 // Timeline starts at 11:00
 const timelineStartHour = 11;
@@ -48,11 +49,17 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
   };
 
   // Delete event handler
-  const handleDeleteEvent = (id) => {
-    setEvents(prev => prev.filter(ev => ev.id !== id));
-    setSelectedEvent(null);
-    setEditMode(false);
-  };
+  const handleDeleteEvent = async (id) => {
+    try {
+        await api.delete(`/events/${id}`);
+        setEvents(prev => prev.filter(ev => ev.id !== id));
+        setSelectedEvent(null);
+        setEditMode(false);
+    } catch (error) {
+        console.error('Error deleting event:', error);
+        alert('Failed to delete event. Please try again.');
+    }
+};
 
   // Only show today's events, sorted by start time
   const todayEvents = events

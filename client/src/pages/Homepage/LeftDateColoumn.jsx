@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import EditEventForm from "./EditEventForm";
+import api from "../../utils/api";
 
 const monthNames = [
   "January", "February", "March", "April", "May", "June",
@@ -71,16 +72,17 @@ const LeftDateColumn = ({ darkMode, events = [], setEvents }) => {
     setSelectedEvent(null);
     setEditMode(false);
   };
-  const handleDeleteEvent = (id) => {
-    console.log('Delete button clicked for id:', id);
-    if (!id) {
-      alert('Event is missing an id! Delete will not work.');
-      return;
+  const handleDeleteEvent = async (id) => {
+    try {
+        await api.delete(`/events/${id}`);
+        setEvents(prev => prev.filter(ev => ev.id !== id));
+        setSelectedEvent(null);
+        setEditMode(false);
+    } catch (error) {
+        console.error('Error deleting event:', error);
+        alert('Failed to delete event. Please try again.');
     }
-    setEvents(prev => prev.filter(ev => ev.id !== id));
-    setSelectedEvent(null);
-    setEditMode(false);
-  };
+};
 
   return (
     <div
