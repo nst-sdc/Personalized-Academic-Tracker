@@ -1,23 +1,9 @@
 import React, { useState } from "react";
 import EventCard from "./EventCard";
-import { MdHome, MdSearch, MdPieChart, MdAccessTime, MdPerson } from "react-icons/md";
-import { IoMdArrowDropdown } from "react-icons/io";
-import { FaCircle, FaMinus } from "react-icons/fa";
+import { MdAdd, MdClose, MdEdit, MdDelete } from "react-icons/md";
 import AddEventModal from "./AddEventModal";
 import EditEventForm from "./EditEventForm";
 import api from "../../utils/api";
-
-// Timeline starts at 11:00
-const timelineStartHour = 11;
-const pixelsPerMinute = 2.5;
-
-function calculateTopFromTime(timeStr) {
-  const [hours, minutes] = timeStr.split(":").map(Number);
-  const totalMinutes = (hours - timelineStartHour) * 60 + minutes;
-  return totalMinutes * pixelsPerMinute;
-}
-
-const times = ["11:00", "12:00", "13:00", "14:00", "15:00"];
 
 function isToday(date) {
   const d = new Date(date);
@@ -30,76 +16,46 @@ function formatTime(date) {
 }
 
 const MainTimeLine = ({ darkMode, events, setEvents }) => {
-  const [activeNav, setActiveNav] = useState("Home");
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [editMode, setEditMode] = useState(false);
 
-  // Add event handler - Only update state, don't make API call
+  // Add event handler
   const handleAddEvent = (newEvent) => {
-    console.log('Adding event to state:', newEvent);
-    // Simply add the event to state - API call already happened in modal
     setEvents(prev => [...prev, newEvent]);
   };
 
-  // Edit event handler - Fixed to use _id
+  // Edit event handler
   const handleEditEvent = async (updatedEvent) => {
     try {
-        console.log('Updating event:', updatedEvent);
-        
-        // Use _id if id is not available
-        const eventId = updatedEvent.id || updatedEvent._id;
-        
-        if (!eventId) {
-            alert('Event is missing an id! Edit will not work.');
-            return;
-        }
-        
-        const response = await api.put(`/events/${eventId}`, updatedEvent);
-        console.log('Event updated:', response.data);
-        
-        // Update the event in state with the response data
-        setEvents(prev => prev.map(ev => 
-            (ev.id || ev._id) === eventId ? response.data.data : ev
-        ));
-        setSelectedEvent(null);
-        setEditMode(false);
+      const eventId = updatedEvent.id || updatedEvent._id;
+      if (!eventId) {
+        alert('Event is missing an id! Edit will not work.');
+        return;
+      }
+      const response = await api.put(`/events/${eventId}`, updatedEvent);
+      setEvents(prev => prev.map(ev => (ev.id || ev._id) === eventId ? response.data.data : ev));
+      setSelectedEvent(null);
+      setEditMode(false);
     } catch (error) {
-        console.error('Error updating event:', error);
-        alert(`Failed to update event: ${error.response?.data?.message || error.message}`);
+      alert(`Failed to update event: ${error.response?.data?.message || error.message}`);
     }
   };
 
-  // Delete event handler - Fixed to use _id
+  // Delete event handler
   const handleDeleteEvent = async (eventToDelete) => {
     try {
-        // Use _id if id is not available
-        const eventId = eventToDelete.id || eventToDelete._id;
-        
-        console.log('Deleting event with ID:', eventId);
-        console.log('Event object:', eventToDelete);
-        console.log('ID type:', typeof eventId);
-        console.log('ID value:', eventId);
-        
-        // Validate ID before making request
-        if (!eventId) {
-            alert('Invalid event ID');
-            return;
-        }
-        
-        const response = await api.delete(`/events/${eventId}`);
-        console.log('Delete response:', response.data);
-        
-        // Remove from state using the correct ID
-        setEvents(prev => prev.filter(ev => (ev.id || ev._id) !== eventId));
-        setSelectedEvent(null);
-        setEditMode(false);
-        
-        alert('Event deleted successfully');
+      const eventId = eventToDelete.id || eventToDelete._id;
+      if (!eventId) {
+        alert('Invalid event ID');
+        return;
+      }
+      await api.delete(`/events/${eventId}`);
+      setEvents(prev => prev.filter(ev => (ev.id || ev._id) !== eventId));
+      setSelectedEvent(null);
+      setEditMode(false);
     } catch (error) {
-        console.error('Error deleting event:', error);
-        console.error('Error response:', error.response?.data);
-        alert(`Failed to delete event: ${error.response?.data?.message || error.message}`);
+      alert(`Failed to delete event: ${error.response?.data?.message || error.message}`);
     }
   };
 
@@ -109,56 +65,67 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
     .sort((a, b) => new Date(a.start) - new Date(b.start));
 
   return (
-    <div className={`flex-1 flex flex-col ${darkMode ? "bg-black text-white" : "bg-white text-black"}`}>
-      <main className="flex-1 overflow-y-auto pl-8 pr-4 py-8">
+    <div className={`flex-1 flex flex-col items-center justify-center ${darkMode ? "bg-black text-white" : "bg-gray-50 text-black"} transition-colors duration-300`}>
+      <main className="w-full max-w-3xl mx-auto flex-1 overflow-y-auto px-2 sm:px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Today's Timeline</h1>
+          <h1 className="text-3xl font-bold mb-1">Today's Timeline</h1>
           <p className="text-lg text-gray-500 dark:text-gray-400">{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
-        {todayEvents.length === 0 ? (
-          <div className="flex items-center justify-center h-40 text-lg font-semibold text-gray-400 dark:text-gray-500">No Events Today</div>
-        ) : (
-          <div className="space-y-8">
-            {todayEvents.map((event, idx) => {
-              const start = new Date(event.start);
-              const end = new Date(event.end);
-              const startStr = formatTime(start);
-              const endStr = formatTime(end);
-              // Use _id if id is not available for the key
-              const eventKey = event.id || event._id || `event-${idx}`;
-              
-              return (
-                <div key={eventKey} className="flex items-start gap-4 group cursor-pointer" onClick={() => { setSelectedEvent(event); setEditMode(false); }}>
-                  <div className="min-w-[64px] text-right pt-2">
-                    <span className="text-lg font-semibold text-blue-600 dark:text-blue-300">{startStr}</span>
-                  </div>
-                  <div className="flex-1">
-                    <EventCard
-                      title={event.title}
-                      start={startStr}
-                      end={endStr}
-                      duration={null}
-                      bgColor="bg-[#E3F2FD] dark:bg-[#1e293b]"
-                      borderColor="border-[#2196F3] dark:border-[#60a5fa]"
-                      textColor="text-[#1976D2] dark:text-[#60a5fa]"
-                      avatars={1}
-                      height={100}
-                      category={event.category}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-        <button
-          className="fixed bottom-8 right-8 bg-[#FF5722] text-white px-6 py-3 rounded-full shadow-lg flex items-center space-x-2 z-20"
-          aria-label="Add new event"
-          onClick={() => setModalOpen(true)}
-        >
-          <span className="text-2xl font-light leading-none">+</span>
-          <span className="text-[15px] font-medium">Add Event</span>
-        </button>
+        <div className={`relative rounded-3xl shadow-xl p-8 min-h-[350px] ${darkMode ? "bg-[#18181b] border border-gray-800" : "bg-white border border-gray-200"}`}>
+          {/* Vertical Timeline Line */}
+          <div className="absolute left-8 top-8 bottom-8 w-1 bg-gradient-to-b from-blue-400 to-indigo-400 dark:from-blue-900 dark:to-indigo-900 rounded-full z-0" style={{ minHeight: 'calc(100% - 4rem)' }} />
+          {todayEvents.length === 0 ? (
+            <div className="flex items-center justify-center h-40 text-lg font-semibold text-gray-400 dark:text-gray-500">No Events Today</div>
+          ) : (
+            <ul className="relative z-10 flex flex-col gap-10">
+              {todayEvents.map((event, idx) => {
+                const start = new Date(event.start);
+                const end = new Date(event.end);
+                const startStr = formatTime(start);
+                const endStr = formatTime(end);
+                const eventKey = event.id || event._id || `event-${idx}`;
+                return (
+                  <li key={eventKey} className="flex items-center group">
+                    {/* Timeline Dot */}
+                    <div className="flex flex-col items-center mr-8">
+                      <span className={`w-5 h-5 rounded-full border-4 ${darkMode ? "border-blue-900 bg-[#18181b]" : "border-blue-400 bg-white"} shadow-lg z-10`} />
+                      {idx !== todayEvents.length - 1 && <div className="flex-1 w-1 bg-blue-200 dark:bg-blue-900" />}
+                    </div>
+                    {/* Event Card */}
+                    <div className="flex-1 transition-transform duration-200 group-hover:scale-[1.025] group-hover:shadow-2xl cursor-pointer" onClick={() => { setSelectedEvent(event); setEditMode(false); }}>
+                      <EventCard
+                        title={event.title}
+                        start={startStr}
+                        end={endStr}
+                        duration={null}
+                        bgColor="bg-[#E3F2FD] dark:bg-[#1e293b]"
+                        borderColor="border-[#2196F3] dark:border-[#60a5fa]"
+                        textColor="text-[#1976D2] dark:text-[#60a5fa]"
+                        avatars={1}
+                        height={100}
+                        category={event.category}
+                      />
+                    </div>
+                    {/* Time Label */}
+                    <div className="ml-6 min-w-[70px] text-right text-sm text-gray-500 dark:text-gray-400 font-semibold">
+                      {startStr}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {/* Add Event Floating Button */}
+          <button
+            className="fixed bottom-10 right-10 bg-gradient-to-br from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-4xl transition-all duration-200 z-30 group"
+            aria-label="Add new event"
+            onClick={() => setModalOpen(true)}
+            title="Add Event"
+          >
+            <MdAdd />
+            <span className="sr-only">Add Event</span>
+          </button>
+        </div>
         <AddEventModal
           open={modalOpen}
           onClose={() => setModalOpen(false)}
@@ -173,7 +140,7 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
                 onClick={() => { setSelectedEvent(null); setEditMode(false); }}
                 aria-label="Close"
               >
-                &times;
+                <MdClose />
               </button>
               {!editMode ? (
                 <>
@@ -182,8 +149,8 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
                   <div className="mb-2 text-gray-700 dark:text-gray-200"><b>Description:</b> {selectedEvent.description || '—'}</div>
                   <div className="mb-2 text-gray-700 dark:text-gray-200"><b>Time:</b> {formatTime(selectedEvent.start)} - {formatTime(selectedEvent.end)}</div>
                   <div className="flex gap-2 mt-6">
-                    <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition" onClick={() => setEditMode(true)}>Edit</button>
-                    <button className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded transition" onClick={() => handleDeleteEvent(selectedEvent)}>Delete</button>
+                    <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition flex items-center justify-center gap-2" onClick={() => setEditMode(true)}><MdEdit /> Edit</button>
+                    <button className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded transition flex items-center justify-center gap-2" onClick={() => handleDeleteEvent(selectedEvent)}><MdDelete /> Delete</button>
                   </div>
                 </>
               ) : (

@@ -6,6 +6,7 @@ import LeftDateColoumn from "./LeftDateColoumn.jsx";
 import MainTimeline from "./MainTimeLine.jsx";
 import Calendar from "../Calendar.jsx"; // Ensure this file exists
 import Settings from "../Settings";
+import Tracker from "../Tracker/tracker.jsx";
 import api from "../../utils/api";
 
 function HomePageLayout({ darkMode, setDarkMode }) {
@@ -55,6 +56,7 @@ function HomePageLayout({ darkMode, setDarkMode }) {
             <Routes>
               <Route path="/" element={<MainTimeline darkMode={darkMode} events={events} setEvents={setEvents} />} />
               <Route path="/calendar" element={<Calendar darkMode={darkMode} />} />
+              <Route path="/tracker" element={<Tracker />} />
               <Route path="/settings" element={<Settings darkMode={darkMode} />} />
               <Route
                 path="*"

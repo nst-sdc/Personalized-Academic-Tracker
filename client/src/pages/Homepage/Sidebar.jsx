@@ -6,7 +6,7 @@ import {
   AiFillPieChart,
   AiOutlineSetting,
 } from "react-icons/ai";
-import { MdWork, MdPlayArrow, MdLogout } from "react-icons/md";
+import { MdWork, MdPlayArrow, MdLogout, MdTrackChanges } from "react-icons/md";
 import { SiAirtable } from "react-icons/si";
 
 const navItems = [
@@ -14,7 +14,7 @@ const navItems = [
   { key: "calendar", icon: <AiOutlineCalendar size={24} />, alt: "Calendar", path: "/calendar" },
   { key: "work", icon: <MdWork size={24} />, alt: "Work", path: "/work" },
   { key: "play", icon: <MdPlayArrow size={24} />, alt: "Play", path: "/play" },
-  { key: "chart", icon: <AiFillPieChart size={24} />, alt: "Chart", path: "/chart" },
+  { key: "tracker", icon: <MdTrackChanges size={24} />, alt: "Tracker", path: "/tracker" },
   { key: "settings", icon: <AiOutlineSetting size={24} />, alt: "Settings", path: "/settings" },
 ];
 
