@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import api from "../../utils/api";
 
 const categories = [
   "Class",
@@ -19,12 +20,28 @@ export default function EditEventForm({ event, onSave, onCancel }) {
   const [endTime, setEndTime] = useState(event.end ? new Date(event.end).toISOString().slice(11,16) : "");
   const [category, setCategory] = useState(event.category);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const start = date && startTime ? new Date(`${date}T${startTime}`) : null;
-    const end = date && endTime ? new Date(`${date}T${endTime}`) : null;
-    onSave({ ...event, title, description, start, end, category });
-  };
+    
+    try {
+        const start = date && startTime ? new Date(`${date}T${startTime}`) : null;
+        const end = date && endTime ? new Date(`${date}T${endTime}`) : null;
+        
+        const response = await api.put(`/events/${event.id}`, {
+            ...event,
+            title,
+            description,
+            start,
+            end,
+            category
+        });
+        
+        onSave(response.data.data);
+    } catch (error) {
+        console.error('Error updating event:', error);
+        alert('Failed to update event. Please try again.');
+    }
+};
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 mt-2 bg-blue-50 dark:bg-zinc-800 rounded-xl shadow-lg p-6">

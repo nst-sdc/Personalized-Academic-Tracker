@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar.jsx";
 import TopNavbar from "./TopNavbar.jsx";
@@ -6,12 +6,29 @@ import LeftDateColoumn from "./LeftDateColoumn.jsx";
 import MainTimeline from "./MainTimeLine.jsx";
 import Calendar from "../Calendar.jsx"; // Ensure this file exists
 import Settings from "../Settings";
+import api from "../../utils/api";
 
 function HomePageLayout({ darkMode, setDarkMode }) {
   const location = useLocation();
   const [activeItem, setActiveItem] = useState("home");
   // Shared events state
   const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+        try {
+            const response = await api.get('/events');
+            setEvents(response.data.data);
+        } catch (error) {
+            console.error('Error fetching events:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    fetchEvents();
+}, []);
 
   const showDateCol =
     (location.pathname === "/" || location.pathname === "/calendar");

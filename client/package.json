@@ -16,6 +16,7 @@
     "@fullcalendar/timegrid": "^6.1.18",
     "@react-oauth/google": "^0.12.2",
     "@tailwindcss/vite": "^4.1.10",
+    "axios": "^1.10.0",
     "framer-motion": "^12.19.1",
     "lucide-react": "^0.523.0",
     "react": "^19.1.0",
