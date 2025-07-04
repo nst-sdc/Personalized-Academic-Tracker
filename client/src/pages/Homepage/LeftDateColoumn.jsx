@@ -62,25 +62,63 @@ const LeftDateColumn = ({ darkMode, events = [], setEvents }) => {
   const weekLabel = `${weekStart.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
 
   // Edit and delete handlers
-  const handleEditEvent = (updatedEvent) => {
-    console.log('EditEventForm onSave called with:', updatedEvent);
-    if (!updatedEvent.id) {
-      alert('Event is missing an id! Edit will not work.');
-      return;
-    }
-    setEvents(prev => prev.map(ev => ev.id === updatedEvent.id ? updatedEvent : ev));
-    setSelectedEvent(null);
-    setEditMode(false);
-  };
-  const handleDeleteEvent = async (id) => {
+  const handleEditEvent = async (updatedEvent) => {
     try {
-        await api.delete(`/events/${id}`);
-        setEvents(prev => prev.filter(ev => ev.id !== id));
+        console.log('Updating event:', updatedEvent);
+        
+        // Use _id if id is not available
+        const eventId = updatedEvent.id || updatedEvent._id;
+        
+        if (!eventId) {
+            alert('Event is missing an id! Edit will not work.');
+            return;
+        }
+        
+        const response = await api.put(`/events/${eventId}`, updatedEvent);
+        console.log('Event updated:', response.data);
+        
+        // Update the event in state with the response data
+        setEvents(prev => prev.map(ev => 
+            (ev.id || ev._id) === eventId ? response.data.data : ev
+        ));
         setSelectedEvent(null);
         setEditMode(false);
     } catch (error) {
+        console.error('Error updating event:', error);
+        alert(`Failed to update event: ${error.response?.data?.message || error.message}`);
+    }
+};
+
+// Delete event handler - Fixed to use _id
+const handleDeleteEvent = async (eventToDelete) => {
+    try {
+        // Use _id if id is not available
+        const eventId = eventToDelete.id || eventToDelete._id;
+        
+        console.log('Deleting event with ID:', eventId);
+        console.log('Event object:', eventToDelete);
+        console.log('ID type:', typeof eventId);
+        console.log('ID value:', eventId);
+        
+        // Validate ID before making request
+        if (!eventId) {
+            alert('Invalid event ID');
+            return;
+        }
+        
+        const response = await api.delete(`/events/${eventId}`);
+        console.log('Delete response:', response.data);
+        
+        // Remove from state using the correct ID
+        setEvents(prev => prev.filter(ev => (ev.id || ev._id) !== eventId));
+        setSelectedEvent(null);
+        setEditMode(false);
+        
+        alert('Event deleted successfully');
+    } catch (error) {
         console.error('Error deleting event:', error);
-        alert('Failed to delete event. Please try again.');
+        console.error('Error response:', error.response?.data);
+        alert(`Failed to delete event: ${error.response?.data?.message || error.message}`);
     }
 };
 
@@ -115,9 +153,12 @@ const LeftDateColumn = ({ darkMode, events = [], setEvents }) => {
           const end = new Date(ev.end);
           const dayLetter = start.toLocaleDateString(undefined, { weekday: 'short' }).charAt(0);
           const dayNum = start.getDate();
+          // Use _id if id is not available for the key
+          const eventKey = ev.id || ev._id || `event-${idx}`;
+          
           return (
             <div
-              key={ev.id || idx}
+              key={eventKey}
               className={`${highlightCardBg} rounded-lg p-4 mb-6 cursor-pointer`}
               onClick={() => { setSelectedEvent(ev); setEditMode(false); }}
             >
@@ -163,7 +204,7 @@ const LeftDateColumn = ({ darkMode, events = [], setEvents }) => {
                 <div className="mb-2 text-gray-700 dark:text-gray-200"><b>Time:</b> {new Date(selectedEvent.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(selectedEvent.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                 <div className="flex gap-2 mt-6">
                   <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition" onClick={() => setEditMode(true)}>Edit</button>
-                  <button className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded transition" onClick={() => handleDeleteEvent(selectedEvent.id)}>Delete</button>
+                  <button className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded transition" onClick={() => handleDeleteEvent(selectedEvent)}>Delete</button>
                 </div>
               </>
             ) : (

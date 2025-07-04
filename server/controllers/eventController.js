@@ -131,34 +131,71 @@ exports.updateEvent = async (req, res) => {
 // @access  Private
 exports.deleteEvent = async (req, res) => {
     try {
+        console.log('Delete request received for event ID:', req.params.id);
+        console.log('User ID:', req.user?.id);
+        
+        // Validate ObjectId format
+        if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+            console.log('Invalid ObjectId format:', req.params.id);
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid event ID format'
+            });
+        }
+
         const event = await Event.findById(req.params.id);
+        console.log('Event found:', event ? 'Yes' : 'No');
 
         if (!event) {
+            console.log('Event not found in database');
             return res.status(404).json({
                 success: false,
                 message: 'Event not found'
             });
         }
 
+        console.log('Event user ID:', event.user.toString());
+        console.log('Request user ID:', req.user.id);
+
         // Make sure user owns the event
         if (event.user.toString() !== req.user.id) {
+            console.log('User not authorized to delete this event');
             return res.status(401).json({
                 success: false,
                 message: 'Not authorized to delete this event'
             });
         }
 
-        await event.remove();
+        // Try multiple deletion methods to ensure compatibility
+        try {
+            // Method 1: findByIdAndDelete (recommended)
+            await Event.findByIdAndDelete(req.params.id);
+            console.log('Event deleted successfully using findByIdAndDelete');
+        } catch (deleteError) {
+            console.log('findByIdAndDelete failed, trying deleteOne:', deleteError.message);
+            try {
+                // Method 2: deleteOne
+                await Event.deleteOne({ _id: req.params.id });
+                console.log('Event deleted successfully using deleteOne');
+            } catch (deleteOneError) {
+                console.log('deleteOne failed, trying remove:', deleteOneError.message);
+                // Method 3: remove (deprecated but might still work)
+                await event.remove();
+                console.log('Event deleted successfully using remove');
+            }
+        }
 
         res.status(200).json({
             success: true,
-            data: {}
+            data: {},
+            message: 'Event deleted successfully'
         });
     } catch (error) {
         console.error('Delete event error:', error);
+        console.error('Error stack:', error.stack);
         res.status(500).json({
             success: false,
-            message: 'Server error'
+            message: 'Server error: ' + error.message
         });
     }
 };
