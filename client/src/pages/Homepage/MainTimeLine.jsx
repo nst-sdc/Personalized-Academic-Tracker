@@ -37,27 +37,78 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
 
   // Add event handler (shared state)
   const handleAddEvent = async (eventData) => {
-    setEvents(prev => [...prev, { ...eventData, id: Date.now() }]);
-    setModalOpen(false);
-  };
-
-  // Edit event handler
-  const handleEditEvent = (updatedEvent) => {
-    setEvents(prev => prev.map(ev => ev.id === updatedEvent.id ? updatedEvent : ev));
-    setSelectedEvent(null);
-    setEditMode(false);
-  };
-
-  // Delete event handler
-  const handleDeleteEvent = async (id) => {
     try {
-        await api.delete(`/events/${id}`);
-        setEvents(prev => prev.filter(ev => ev.id !== id));
+        console.log('Creating event:', eventData);
+        const response = await api.post('/events', eventData);
+        console.log('Event created:', response.data);
+        
+        // Add the new event with the real ID from the database
+        setEvents(prev => [...prev, response.data.data]);
+        setModalOpen(false);
+    } catch (error) {
+        console.error('Error creating event:', error);
+        alert(`Failed to create event: ${error.response?.data?.message || error.message}`);
+    }
+};
+
+// Edit event handler - Fixed to use _id
+const handleEditEvent = async (updatedEvent) => {
+    try {
+        console.log('Updating event:', updatedEvent);
+        
+        // Use _id if id is not available
+        const eventId = updatedEvent.id || updatedEvent._id;
+        
+        if (!eventId) {
+            alert('Event is missing an id! Edit will not work.');
+            return;
+        }
+        
+        const response = await api.put(`/events/${eventId}`, updatedEvent);
+        console.log('Event updated:', response.data);
+        
+        // Update the event in state with the response data
+        setEvents(prev => prev.map(ev => 
+            (ev.id || ev._id) === eventId ? response.data.data : ev
+        ));
         setSelectedEvent(null);
         setEditMode(false);
     } catch (error) {
+        console.error('Error updating event:', error);
+        alert(`Failed to update event: ${error.response?.data?.message || error.message}`);
+    }
+};
+
+// Delete event handler - Fixed to use _id
+const handleDeleteEvent = async (eventToDelete) => {
+    try {
+        // Use _id if id is not available
+        const eventId = eventToDelete.id || eventToDelete._id;
+        
+        console.log('Deleting event with ID:', eventId);
+        console.log('Event object:', eventToDelete);
+        console.log('ID type:', typeof eventId);
+        console.log('ID value:', eventId);
+        
+        // Validate ID before making request
+        if (!eventId) {
+            alert('Invalid event ID');
+            return;
+        }
+        
+        const response = await api.delete(`/events/${eventId}`);
+        console.log('Delete response:', response.data);
+        
+        // Remove from state using the correct ID
+        setEvents(prev => prev.filter(ev => (ev.id || ev._id) !== eventId));
+        setSelectedEvent(null);
+        setEditMode(false);
+        
+        alert('Event deleted successfully');
+    } catch (error) {
         console.error('Error deleting event:', error);
-        alert('Failed to delete event. Please try again.');
+        console.error('Error response:', error.response?.data);
+        alert(`Failed to delete event: ${error.response?.data?.message || error.message}`);
     }
 };
 
@@ -82,8 +133,11 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
               const end = new Date(event.end);
               const startStr = formatTime(start);
               const endStr = formatTime(end);
+              // Use _id if id is not available for the key
+              const eventKey = event.id || event._id || `event-${idx}`;
+              
               return (
-                <div key={event.id} className="flex items-start gap-4 group cursor-pointer" onClick={() => { setSelectedEvent(event); setEditMode(false); }}>
+                <div key={eventKey} className="flex items-start gap-4 group cursor-pointer" onClick={() => { setSelectedEvent(event); setEditMode(false); }}>
                   <div className="min-w-[64px] text-right pt-2">
                     <span className="text-lg font-semibold text-blue-600 dark:text-blue-300">{startStr}</span>
                   </div>
@@ -138,7 +192,7 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
                   <div className="mb-2 text-gray-700 dark:text-gray-200"><b>Time:</b> {formatTime(selectedEvent.start)} - {formatTime(selectedEvent.end)}</div>
                   <div className="flex gap-2 mt-6">
                     <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition" onClick={() => setEditMode(true)}>Edit</button>
-                    <button className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded transition" onClick={() => handleDeleteEvent(selectedEvent.id)}>Delete</button>
+                    <button className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded transition" onClick={() => handleDeleteEvent(selectedEvent)}>Delete</button>
                   </div>
                 </>
               ) : (
