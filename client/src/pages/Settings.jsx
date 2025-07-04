@@ -17,6 +17,12 @@ const Settings = ({ darkMode, setDarkMode }) => {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
 
+  const [editMode, setEditMode] = useState(false);
+  const [profile, setProfile] = useState({
+    name: "Full Name",
+    email: "Email",
+  });
+
   const inputClass =
     "w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400";
 
@@ -69,7 +75,7 @@ const Settings = ({ darkMode, setDarkMode }) => {
 
           {/* Profile */}
           {activeTab === "profile" && (
-            <form className="space-y-4">
+            <div className="space-y-4">
               <div className="flex flex-col items-center gap-4">
                 {profileImage ? (
                   <img
@@ -83,29 +89,73 @@ const Settings = ({ darkMode, setDarkMode }) => {
                   </div>
                 )}
 
-                <label className="px-4 py-2 bg-blue-500 text-white rounded-lg cursor-pointer hover:bg-blue-600 transition">
-                  Upload Profile Picture
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={(e) => {
-                      if (e.target.files && e.target.files[0]) {
-                        setProfileImage(e.target.files[0]);
+                {editMode && (
+                  <label className="px-4 py-2 bg-blue-500 text-white rounded-lg cursor-pointer hover:bg-blue-600 transition">
+                    Upload Profile Picture
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          setProfileImage(e.target.files[0]);
+                        }
+                      }}
+                    />
+                  </label>
+                )}
+              </div>
+
+              {!editMode ? (
+                <div className="space-y-2">
+                  <p><strong>Name:</strong> {profile.name}</p>
+                  <p><strong>Email:</strong> {profile.email}</p>
+                  <button
+                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                    onClick={() => setEditMode(true)}
+                  >
+                    Edit Profile
+                  </button>
+                </div>
+              ) : (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setEditMode(false); 
+                  }}
+                  className="space-y-4"
+                >
+                  <div>
+                    <label className="block mb-1">Full Name</label>
+                    <input
+                      type="text"
+                      className={inputClass}
+                      value={profile.name}
+                      onChange={(e) =>
+                        setProfile((prev) => ({ ...prev, name: e.target.value }))
                       }
-                    }}
-                  />
-                </label>
-              </div>
-              <div>
-                <label className="block mb-1">Full Name</label>
-                <input type="text" className={inputClass} placeholder="Enter your Name" />
-              </div>
-              <div>
-                <label className="block mb-1">Email</label>
-                <input type="email" className={inputClass} placeholder="Enter your Email" />
-              </div>
-            </form>
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1">Email</label>
+                    <input
+                      type="email"
+                      className={inputClass}
+                      value={profile.email}
+                      onChange={(e) =>
+                        setProfile((prev) => ({ ...prev, email: e.target.value }))
+                      }
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                  >
+                    Save Changes
+                  </button>
+                </form>
+              )}
+            </div>
           )}
 
           {/* Academic Info */}
