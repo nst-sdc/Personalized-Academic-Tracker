@@ -37,9 +37,10 @@ export default function AddEventModal({ open, onClose, onSave }) {
         return;
       }
 
-      // Create proper ISO date strings
-      const start = date && startTime ? new Date(`${date}T${startTime}:00.000Z`) : null;
-      const end = date && endTime ? new Date(`${date}T${endTime}:00.000Z`) : null;
+      // Create proper date objects in local timezone (not UTC)
+      // This preserves the user's entered time without timezone conversion
+      const start = date && startTime ? new Date(`${date}T${startTime}:00`) : null;
+      const end = date && endTime ? new Date(`${date}T${endTime}:00`) : null;
       
       console.log("Sending event data:", {
         title,

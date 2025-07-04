@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import EditEventForm from "./EditEventForm";
+import AddEventModal from "./AddEventModal";
 import api from "../../utils/api";
 
 const monthNames = [
@@ -34,6 +35,7 @@ const LeftDateColumn = ({ darkMode, events = [], setEvents }) => {
   const [weekRef, setWeekRef] = useState(getStartOfWeek(today));
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [editMode, setEditMode] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const handlePrevWeek = () => {
     setWeekRef(prev => {
@@ -49,6 +51,13 @@ const LeftDateColumn = ({ darkMode, events = [], setEvents }) => {
       d.setDate(d.getDate() + 7);
       return getStartOfWeek(d);
     });
+  };
+
+  // Add event handler - Only update state, don't make API call
+  const handleAddEvent = (newEvent) => {
+    console.log('Adding event to state from LeftDateColumn:', newEvent);
+    // Simply add the event to state - API call already happened in modal
+    setEvents(prev => [...prev, newEvent]);
   };
 
   // Filter for all events in the selected week
@@ -87,10 +96,10 @@ const LeftDateColumn = ({ darkMode, events = [], setEvents }) => {
         console.error('Error updating event:', error);
         alert(`Failed to update event: ${error.response?.data?.message || error.message}`);
     }
-};
+  };
 
-// Delete event handler - Fixed to use _id
-const handleDeleteEvent = async (eventToDelete) => {
+  // Delete event handler - Fixed to use _id
+  const handleDeleteEvent = async (eventToDelete) => {
     try {
         // Use _id if id is not available
         const eventId = eventToDelete.id || eventToDelete._id;
@@ -120,7 +129,7 @@ const handleDeleteEvent = async (eventToDelete) => {
         console.error('Error response:', error.response?.data);
         alert(`Failed to delete event: ${error.response?.data?.message || error.message}`);
     }
-};
+  };
 
   return (
     <div
