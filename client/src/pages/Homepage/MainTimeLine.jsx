@@ -35,24 +35,15 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [editMode, setEditMode] = useState(false);
 
-  // Add event handler (shared state)
-  const handleAddEvent = async (eventData) => {
-    try {
-        console.log('Creating event:', eventData);
-        const response = await api.post('/events', eventData);
-        console.log('Event created:', response.data);
-        
-        // Add the new event with the real ID from the database
-        setEvents(prev => [...prev, response.data.data]);
-        setModalOpen(false);
-    } catch (error) {
-        console.error('Error creating event:', error);
-        alert(`Failed to create event: ${error.response?.data?.message || error.message}`);
-    }
-};
+  // Add event handler - Only update state, don't make API call
+  const handleAddEvent = (newEvent) => {
+    console.log('Adding event to state:', newEvent);
+    // Simply add the event to state - API call already happened in modal
+    setEvents(prev => [...prev, newEvent]);
+  };
 
-// Edit event handler - Fixed to use _id
-const handleEditEvent = async (updatedEvent) => {
+  // Edit event handler - Fixed to use _id
+  const handleEditEvent = async (updatedEvent) => {
     try {
         console.log('Updating event:', updatedEvent);
         
@@ -77,10 +68,10 @@ const handleEditEvent = async (updatedEvent) => {
         console.error('Error updating event:', error);
         alert(`Failed to update event: ${error.response?.data?.message || error.message}`);
     }
-};
+  };
 
-// Delete event handler - Fixed to use _id
-const handleDeleteEvent = async (eventToDelete) => {
+  // Delete event handler - Fixed to use _id
+  const handleDeleteEvent = async (eventToDelete) => {
     try {
         // Use _id if id is not available
         const eventId = eventToDelete.id || eventToDelete._id;
@@ -110,7 +101,7 @@ const handleDeleteEvent = async (eventToDelete) => {
         console.error('Error response:', error.response?.data);
         alert(`Failed to delete event: ${error.response?.data?.message || error.message}`);
     }
-};
+  };
 
   // Only show today's events, sorted by start time
   const todayEvents = events

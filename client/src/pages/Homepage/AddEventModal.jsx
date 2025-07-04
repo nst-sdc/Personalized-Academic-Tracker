@@ -59,8 +59,10 @@ export default function AddEventModal({ open, onClose, onSave }) {
       
       console.log("Event created successfully:", response.data);
       
-      // Call the onSave callback with the new event
-      onSave(response.data.data || response.data);
+      // Call the onSave callback with the new event - Let parent handle state update
+      if (onSave) {
+        onSave(response.data.data || response.data);
+      }
       
       // Reset form
       setTitle("");
