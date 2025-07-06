@@ -4,6 +4,7 @@ import { MdAdd, MdClose, MdEdit, MdDelete } from "react-icons/md";
 import AddEventModal from "./AddEventModal";
 import EditEventForm from "./EditEventForm";
 import api from "../../utils/api";
+import AddToGoogleCalendarButton from "./AddToGoogleCalendarButton";
 
 function isToday(date) {
   const d = new Date(date);
@@ -91,8 +92,12 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
                       <span className={`w-5 h-5 rounded-full border-4 ${darkMode ? "border-blue-900 bg-[#18181b]" : "border-blue-400 bg-white"} shadow-lg z-10`} />
                       {idx !== todayEvents.length - 1 && <div className="flex-1 w-1 bg-blue-200 dark:bg-blue-900" />}
                     </div>
-                    {/* Event Card */}
-                    <div className="flex-1 transition-transform duration-200 group-hover:scale-[1.025] group-hover:shadow-2xl cursor-pointer" onClick={() => { setSelectedEvent(event); setEditMode(false); }}>
+                    {/* Event Card with Google button at top left inside card */}
+                    <div className="flex-1 transition-transform duration-200 group-hover:scale-[1.025] group-hover:shadow-2xl cursor-pointer relative" onClick={() => { setSelectedEvent(event); setEditMode(false); }}>
+                      {/* Add to Google Calendar small button at top left inside card */}
+                      <div className="absolute top-2 left-2 z-10" onClick={e => e.stopPropagation()}>
+                        <AddToGoogleCalendarButton event={event} small />
+                      </div>
                       <EventCard
                         title={event.title}
                         start={startStr}

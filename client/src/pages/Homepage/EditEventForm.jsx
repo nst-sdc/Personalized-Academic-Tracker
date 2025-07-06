@@ -26,6 +26,23 @@ export default function EditEventForm({ event, onSave, onCancel }) {
     return date.toTimeString().slice(0, 5); // HH:MM
   };
 
+  // Helper to parse date and time as local time (not UTC)
+  function parseLocalDateTime(dateStr, timeStr) {
+    // dateStr: 'YYYY-MM-DD', timeStr: 'HH:mm' (24h or 12h)
+    if (!dateStr || !timeStr) return null;
+    const [year, month, day] = dateStr.split('-').map(Number);
+    const [hourStr, minuteStr] = timeStr.split(':');
+    let hour = Number(hourStr);
+    let minute = Number(minuteStr);
+    // If timeStr includes AM/PM, handle it
+    if (/am|pm/i.test(timeStr)) {
+      const isPM = /pm/i.test(timeStr);
+      if (isPM && hour < 12) hour += 12;
+      if (!isPM && hour === 12) hour = 0;
+    }
+    return new Date(year, month - 1, day, hour, minute, 0, 0);
+  }
+
   const [title, setTitle] = useState(event.title);
   const [description, setDescription] = useState(event.description);
   const [date, setDate] = useState(formatDateFromEvent(event.start));
@@ -41,11 +58,20 @@ export default function EditEventForm({ event, onSave, onCancel }) {
     setError("");
     
     try {
-      // Validate end time is after start time
-      if (startTime && endTime && startTime >= endTime) {
-        setError("End time must be after start time");
-        setLoading(false);
-        return;
+      // Robust time validation using local time
+      if (date && startTime && endTime) {
+        const startDate = parseLocalDateTime(date, startTime);
+        const endDate = parseLocalDateTime(date, endTime);
+        if (!startDate || !endDate) {
+          setError("Invalid start or end time");
+          setLoading(false);
+          return;
+        }
+        if (endDate <= startDate) {
+          setError("End time must be after start time");
+          setLoading(false);
+          return;
+        }
       }
 
       // Create proper date objects in local timezone (not UTC)
