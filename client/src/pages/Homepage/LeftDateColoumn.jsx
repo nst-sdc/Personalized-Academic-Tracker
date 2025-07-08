@@ -3,6 +3,7 @@ import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import EditEventForm from "./EditEventForm";
 import AddEventModal from "./AddEventModal";
 import api from "../../utils/api";
+import AddToGoogleCalendarButton from "./AddToGoogleCalendarButton";
 
 const monthNames = [
   "January", "February", "March", "April", "May", "June",
@@ -168,9 +169,13 @@ const LeftDateColumn = ({ darkMode, events = [], setEvents }) => {
           return (
             <div
               key={eventKey}
-              className={`${highlightCardBg} rounded-lg p-4 mb-6 cursor-pointer`}
+              className={`${highlightCardBg} rounded-lg p-4 mb-6 cursor-pointer relative`}
               onClick={() => { setSelectedEvent(ev); setEditMode(false); }}
             >
+              {/* Add to Google Calendar small button */}
+              <div className="absolute top-2 right-2 z-10" onClick={e => e.stopPropagation()}>
+                <AddToGoogleCalendarButton event={ev} small />
+              </div>
               <div className="flex items-center gap-3 mb-4">
                 {start.toDateString() === today.toDateString() && <span className="bg-[#59C3C8] text-white text-xs px-2 py-1 rounded">Today</span>}
                 <span className={`text-sm font-medium ${textPrimary}`}>{ev.title}</span>
