@@ -1,10 +1,11 @@
 import React, { useState } from "react";
+import { FiCalendar, FiClock, FiType, FiAlignLeft } from "react-icons/fi";
 import api from "../../utils/api";
 
 const categories = [
   "Class",
   "Assignment",
-  "Meeting",
+  "Meeting", 
   "Masterclass",
   "Quiz",
   "Contest",
@@ -12,43 +13,36 @@ const categories = [
   "Other",
 ];
 
+const categoryColors = {
+  Class: "from-blue-500 to-blue-600",
+  Assignment: "from-green-500 to-green-600",
+  Meeting: "from-purple-500 to-purple-600",
+  Masterclass: "from-yellow-500 to-yellow-600",
+  Quiz: "from-pink-500 to-pink-600",
+  Contest: "from-red-500 to-red-600",
+  Practice: "from-teal-500 to-teal-600",
+  Other: "from-gray-500 to-gray-600",
+};
+
 export default function EditEventForm({ event, onSave, onCancel }) {
-  // Helper function to properly format date/time from event data
   const formatDateFromEvent = (dateStr) => {
     if (!dateStr) return "";
     const date = new Date(dateStr);
-    return date.toISOString().slice(0, 10); // YYYY-MM-DD
+    return date.toISOString().slice(0, 10);
   };
 
   const formatTimeFromEvent = (dateStr) => {
     if (!dateStr) return "";
     const date = new Date(dateStr);
-    return date.toTimeString().slice(0, 5); // HH:MM
+    return date.toTimeString().slice(0, 5);
   };
 
-  // Helper to parse date and time as local time (not UTC)
-  function parseLocalDateTime(dateStr, timeStr) {
-    // dateStr: 'YYYY-MM-DD', timeStr: 'HH:mm' (24h or 12h)
-    if (!dateStr || !timeStr) return null;
-    const [year, month, day] = dateStr.split('-').map(Number);
-    const [hourStr, minuteStr] = timeStr.split(':');
-    let hour = Number(hourStr);
-    let minute = Number(minuteStr);
-    // If timeStr includes AM/PM, handle it
-    if (/am|pm/i.test(timeStr)) {
-      const isPM = /pm/i.test(timeStr);
-      if (isPM && hour < 12) hour += 12;
-      if (!isPM && hour === 12) hour = 0;
-    }
-    return new Date(year, month - 1, day, hour, minute, 0, 0);
-  }
-
-  const [title, setTitle] = useState(event.title);
-  const [description, setDescription] = useState(event.description);
+  const [title, setTitle] = useState(event.title || "");
+  const [description, setDescription] = useState(event.description || "");
   const [date, setDate] = useState(formatDateFromEvent(event.start));
   const [startTime, setStartTime] = useState(formatTimeFromEvent(event.start));
   const [endTime, setEndTime] = useState(formatTimeFromEvent(event.end));
-  const [category, setCategory] = useState(event.category);
+  const [category, setCategory] = useState(event.category || categories[0]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -58,33 +52,14 @@ export default function EditEventForm({ event, onSave, onCancel }) {
     setError("");
     
     try {
-      // Robust time validation using local time
-      if (date && startTime && endTime) {
-        const startDate = parseLocalDateTime(date, startTime);
-        const endDate = parseLocalDateTime(date, endTime);
-        if (!startDate || !endDate) {
-          setError("Invalid start or end time");
-          setLoading(false);
-          return;
-        }
-        if (endDate <= startDate) {
-          setError("End time must be after start time");
-          setLoading(false);
-          return;
-        }
+      if (startTime && endTime && startTime >= endTime) {
+        setError("End time must be after start time");
+        setLoading(false);
+        return;
       }
 
-      // Create proper date objects in local timezone (not UTC)
       const start = date && startTime ? new Date(`${date}T${startTime}:00`) : null;
       const end = date && endTime ? new Date(`${date}T${endTime}:00`) : null;
-      
-      console.log("Updating event data:", {
-        title,
-        description,
-        start,
-        end,
-        category
-      });
 
       const eventId = event.id || event._id;
       const response = await api.put(`/events/${eventId}`, {
@@ -94,14 +69,10 @@ export default function EditEventForm({ event, onSave, onCancel }) {
         end,
         category
       });
-      
-      console.log("Event updated successfully:", response.data);
+
       onSave(response.data.data);
       
     } catch (error) {
-      console.error('Error updating event:', error);
-      
-      // Handle different types of errors
       if (error.response) {
         const errorMessage = error.response.data?.message || 
                             error.response.data?.error || 
@@ -118,103 +89,138 @@ export default function EditEventForm({ event, onSave, onCancel }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 mt-2 bg-blue-50 dark:bg-zinc-800 rounded-xl shadow-lg p-6">
+    <div>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+          Edit Event
+        </h2>
+        <p className="text-gray-600 dark:text-gray-400">
+          Update event details
+        </p>
+      </div>
+
       {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-xl">
+        <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-2xl">
           {error}
         </div>
       )}
-      
-      <div>
-        <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">Title</label>
-        <input 
-          type="text" 
-          className="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-4 py-2 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition" 
-          value={title} 
-          onChange={e => setTitle(e.target.value)} 
-          required 
-          maxLength={100}
-        />
-      </div>
-      
-      <div>
-        <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">Description</label>
-        <textarea 
-          className="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-4 py-2 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition" 
-          value={description} 
-          onChange={e => setDescription(e.target.value)} 
-          rows={2}
-          maxLength={500}
-        />
-      </div>
-      
-      <div>
-        <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">Category</label>
-        <div className="relative">
-          <select
-            className="w-full border border-blue-300 dark:border-blue-800 rounded-xl px-4 py-2 bg-blue-50 dark:bg-blue-950 text-blue-900 dark:text-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-400 transition font-semibold appearance-none pr-8 hover:border-blue-400"
-            value={category}
-            onChange={e => setCategory(e.target.value)}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            <FiType className="w-4 h-4" />
+            <span>Event Title</span>
+          </label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
+            placeholder="Enter event title"
             required
-          >
+            maxLength={100}
+          />
+        </div>
+
+        <div>
+          <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            <FiAlignLeft className="w-4 h-4" />
+            <span>Description</span>
+          </label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 resize-none"
+            placeholder="Add a description (optional)"
+            rows={3}
+            maxLength={500}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            Category
+          </label>
+          <div className="grid grid-cols-2 gap-3">
             {categories.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setCategory(cat)}
+                className={`p-3 rounded-2xl border-2 transition-all duration-200 ${
+                  category === cat
+                    ? `bg-gradient-to-r ${categoryColors[cat]} text-white border-transparent shadow-lg`
+                    : 'border-gray-200 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-slate-500'
+                }`}
+              >
+                <span className="text-sm font-medium">{cat}</span>
+              </button>
             ))}
-          </select>
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-blue-400 dark:text-blue-300 text-lg">▼</span>
+          </div>
         </div>
-      </div>
-      
-      <div>
-        <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">Date</label>
-        <input 
-          type="date" 
-          className="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-4 py-2 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition" 
-          value={date} 
-          onChange={e => setDate(e.target.value)} 
-          required 
-        />
-      </div>
-      
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="flex-1">
-          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">Start Time</label>
-          <input 
-            type="time" 
-            className="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-4 py-2 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition" 
-            value={startTime} 
-            onChange={e => setStartTime(e.target.value)} 
-            required 
+
+        <div>
+          <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            <FiCalendar className="w-4 h-4" />
+            <span>Date</span>
+          </label>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
+            required
           />
         </div>
-        <div className="flex-1">
-          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-200">End Time</label>
-          <input 
-            type="time" 
-            className="w-full border border-gray-300 dark:border-zinc-700 rounded-lg px-4 py-2 bg-white dark:bg-zinc-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition" 
-            value={endTime} 
-            onChange={e => setEndTime(e.target.value)} 
-            required 
-          />
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              <FiClock className="w-4 h-4" />
+              <span>Start Time</span>
+            </label>
+            <input
+              type="time"
+              value={startTime}
+              onChange={(e) => setStartTime(e.target.value)}
+              className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
+              required
+            />
+          </div>
+          <div>
+            <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              <FiClock className="w-4 h-4" />
+              <span>End Time</span>
+            </label>
+            <input
+              type="time"
+              value={endTime}
+              onChange={(e) => setEndTime(e.target.value)}
+              className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
+              required
+            />
+          </div>
         </div>
-      </div>
-      
-      <div className="flex gap-2 mt-4">
-        <button 
-          type="submit" 
-          className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition shadow disabled:opacity-60 disabled:cursor-not-allowed"
-          disabled={loading}
-        >
-          {loading ? "Saving..." : "Save"}
-        </button>
-        <button 
-          type="button" 
-          className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 rounded-lg transition shadow" 
-          onClick={onCancel}
-        >
-          Cancel
-        </button>
-      </div>
-    </form>
+
+        <div className="flex space-x-3 pt-4">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 px-6 py-3 border border-gray-200 dark:border-slate-600 text-gray-700 dark:text-gray-300 font-semibold rounded-2xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-200"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className={`flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none ${
+              loading ? 'animate-pulse' : ''
+            }`}
+          >
+            {loading ? 'Saving...' : 'Save Changes'}
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }

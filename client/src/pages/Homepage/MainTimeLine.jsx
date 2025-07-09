@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import EventCard from "./EventCard";
-import { MdAdd, MdClose, MdEdit, MdDelete } from "react-icons/md";
+import { FiPlus, FiX, FiEdit2, FiTrash2, FiClock, FiCalendar } from "react-icons/fi";
 import AddEventModal from "./AddEventModal";
 import EditEventForm from "./EditEventForm";
 import api from "../../utils/api";
@@ -65,106 +65,277 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
     .filter(ev => ev.start && isToday(ev.start))
     .sort((a, b) => new Date(a.start) - new Date(b.start));
 
+  const currentDate = new Date();
+  const formattedDate = currentDate.toLocaleDateString('en-US', { 
+    weekday: 'long', 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+  });
+
   return (
-    <div className={`flex-1 flex flex-col items-center justify-center ${darkMode ? "bg-black text-white" : "bg-gray-50 text-black"} transition-colors duration-300`}>
-      <main className="w-full max-w-3xl mx-auto flex-1 overflow-y-auto px-2 sm:px-6 py-8">
+    <div className={`flex-1 min-h-screen transition-all duration-300 ${
+      darkMode 
+        ? "bg-gradient-to-br from-slate-900 to-slate-800" 
+        : "bg-gradient-to-br from-gray-50 to-white"
+    }`}>
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-1">Today's Timeline</h1>
-          <p className="text-lg text-gray-500 dark:text-gray-400">{new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className={`text-3xl font-bold mb-2 ${
+                darkMode ? "text-white" : "text-gray-900"
+              }`}>
+                Today's Timeline
+              </h1>
+              <div className="flex items-center space-x-2">
+                <FiCalendar className={`w-5 h-5 ${
+                  darkMode ? "text-gray-400" : "text-gray-600"
+                }`} />
+                <p className={`text-lg ${
+                  darkMode ? "text-gray-400" : "text-gray-600"
+                }`}>
+                  {formattedDate}
+                </p>
+              </div>
+            </div>
+            
+            <button
+              onClick={() => setModalOpen(true)}
+              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+            >
+              <FiPlus className="w-5 h-5" />
+              <span>Add Event</span>
+            </button>
+          </div>
         </div>
-        <div className={`relative rounded-3xl shadow-xl p-8 min-h-[350px] ${darkMode ? "bg-[#18181b] border border-gray-800" : "bg-white border border-gray-200"}`}>
-          {/* Vertical Timeline Line */}
-          <div className="absolute left-8 top-8 bottom-8 w-1 bg-gradient-to-b from-blue-400 to-indigo-400 dark:from-blue-900 dark:to-indigo-900 rounded-full z-0" style={{ minHeight: 'calc(100% - 4rem)' }} />
-          {todayEvents.length === 0 ? (
-            <div className="flex items-center justify-center h-40 text-lg font-semibold text-gray-400 dark:text-gray-500">No Events Today</div>
-          ) : (
-            <ul className="relative z-10 flex flex-col gap-10">
-              {todayEvents.map((event, idx) => {
-                const start = new Date(event.start);
-                const end = new Date(event.end);
-                const startStr = formatTime(start);
-                const endStr = formatTime(end);
-                const eventKey = event.id || event._id || `event-${idx}`;
-                return (
-                  <li key={eventKey} className="flex items-center group">
-                    {/* Timeline Dot */}
-                    <div className="flex flex-col items-center mr-8">
-                      <span className={`w-5 h-5 rounded-full border-4 ${darkMode ? "border-blue-900 bg-[#18181b]" : "border-blue-400 bg-white"} shadow-lg z-10`} />
-                      {idx !== todayEvents.length - 1 && <div className="flex-1 w-1 bg-blue-200 dark:bg-blue-900" />}
-                    </div>
-                    {/* Event Card with Google button at top left inside card */}
-                    <div className="flex-1 transition-transform duration-200 group-hover:scale-[1.025] group-hover:shadow-2xl cursor-pointer relative" onClick={() => { setSelectedEvent(event); setEditMode(false); }}>
-                      {/* Add to Google Calendar small button at top left inside card */}
-                      <div className="absolute top-2 left-2 z-10" onClick={e => e.stopPropagation()}>
-                        <AddToGoogleCalendarButton event={event} small />
+
+        {/* Timeline */}
+        <div className={`relative backdrop-blur-xl rounded-3xl border shadow-2xl overflow-hidden ${
+          darkMode 
+            ? "bg-slate-800/50 border-slate-700/50" 
+            : "bg-white/70 border-gray-200/20"
+        }`}>
+          {/* Timeline Line */}
+          <div className="absolute left-8 top-8 bottom-8 w-px bg-gradient-to-b from-blue-500 to-purple-500 opacity-30" />
+          
+          <div className="p-8">
+            {todayEvents.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className={`w-16 h-16 rounded-full border-2 border-dashed flex items-center justify-center mb-6 ${
+                  darkMode 
+                    ? "border-gray-600 text-gray-500" 
+                    : "border-gray-300 text-gray-400"
+                }`}>
+                  <FiClock className="w-8 h-8" />
+                </div>
+                <h3 className={`text-xl font-semibold mb-2 ${
+                  darkMode ? "text-gray-300" : "text-gray-700"
+                }`}>
+                  No Events Today
+                </h3>
+                <p className={`text-center max-w-md ${
+                  darkMode ? "text-gray-500" : "text-gray-500"
+                }`}>
+                  Your schedule is clear. Take some time to plan your day or add new events.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                {todayEvents.map((event, idx) => {
+                  const start = new Date(event.start);
+                  const end = new Date(event.end);
+                  const startStr = formatTime(start);
+                  const endStr = formatTime(end);
+                  const eventKey = event.id || event._id || `event-${idx}`;
+                  
+                  return (
+                    <div key={eventKey} className="relative flex items-start space-x-6 group">
+                      {/* Timeline Node */}
+                      <div className="relative flex-shrink-0">
+                        <div className={`w-4 h-4 rounded-full border-2 shadow-lg ${
+                          darkMode 
+                            ? "bg-slate-800 border-blue-500" 
+                            : "bg-white border-blue-500"
+                        }`} />
+                        {idx !== todayEvents.length - 1 && (
+                          <div className="absolute top-4 left-1/2 -translate-x-1/2 w-px h-16 bg-gradient-to-b from-blue-500/30 to-transparent" />
+                        )}
                       </div>
-                      <EventCard
-                        title={event.title}
-                        start={startStr}
-                        end={endStr}
-                        duration={null}
-                        bgColor="bg-[#E3F2FD] dark:bg-[#1e293b]"
-                        borderColor="border-[#2196F3] dark:border-[#60a5fa]"
-                        textColor="text-[#1976D2] dark:text-[#60a5fa]"
-                        avatars={1}
-                        height={100}
-                        category={event.category}
-                      />
+
+                      {/* Event Card */}
+                      <div className="flex-1 min-w-0">
+                        <div 
+                          className={`relative p-6 rounded-2xl border transition-all duration-200 cursor-pointer transform hover:scale-[1.02] hover:shadow-xl ${
+                            darkMode 
+                              ? "bg-slate-700/30 border-slate-600/30 hover:bg-slate-700/50" 
+                              : "bg-white/80 border-gray-200/50 hover:bg-white"
+                          }`}
+                          onClick={() => { setSelectedEvent(event); setEditMode(false); }}
+                        >
+                          {/* Google Calendar Button */}
+                          <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                            <AddToGoogleCalendarButton event={event} small />
+                          </div>
+
+                          <div className="mb-4">
+                            <h3 className={`text-lg font-semibold mb-2 ${
+                              darkMode ? "text-white" : "text-gray-900"
+                            }`}>
+                              {event.title}
+                            </h3>
+                            {event.description && (
+                              <p className={`text-sm mb-3 ${
+                                darkMode ? "text-gray-300" : "text-gray-600"
+                              }`}>
+                                {event.description}
+                              </p>
+                            )}
+                            <div className="flex items-center space-x-4">
+                              <div className="flex items-center space-x-1">
+                                <FiClock className={`w-4 h-4 ${
+                                  darkMode ? "text-gray-400" : "text-gray-500"
+                                }`} />
+                                <span className={`text-sm font-medium ${
+                                  darkMode ? "text-gray-300" : "text-gray-700"
+                                }`}>
+                                  {startStr} - {endStr}
+                                </span>
+                              </div>
+                              {event.category && (
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                  darkMode 
+                                    ? "bg-blue-500/20 text-blue-400" 
+                                    : "bg-blue-100 text-blue-600"
+                                }`}>
+                                  {event.category}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Time Label */}
+                      <div className="flex-shrink-0 w-20 text-right">
+                        <span className={`text-sm font-medium ${
+                          darkMode ? "text-gray-400" : "text-gray-600"
+                        }`}>
+                          {startStr}
+                        </span>
+                      </div>
                     </div>
-                    {/* Time Label */}
-                    <div className="ml-6 min-w-[70px] text-right text-sm text-gray-500 dark:text-gray-400 font-semibold">
-                      {startStr}
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-          {/* Add Event Floating Button */}
-          <button
-            className="fixed bottom-10 right-10 bg-gradient-to-br from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white w-16 h-16 rounded-full shadow-2xl flex items-center justify-center text-4xl transition-all duration-200 z-30 group"
-            aria-label="Add new event"
-            onClick={() => setModalOpen(true)}
-            title="Add Event"
-          >
-            <MdAdd />
-            <span className="sr-only">Add Event</span>
-          </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
+
+        {/* Modals */}
         <AddEventModal
           open={modalOpen}
           onClose={() => setModalOpen(false)}
           onSave={handleAddEvent}
         />
+
         {/* Event Details/Edit Modal */}
         {selectedEvent && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-            <div className="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-8 w-full max-w-md border-2 border-blue-200 dark:border-blue-900">
-              <button
-                className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-3xl transition-colors"
-                onClick={() => { setSelectedEvent(null); setEditMode(false); }}
-                aria-label="Close"
-              >
-                <MdClose />
-              </button>
-              {!editMode ? (
-                <>
-                  <h2 className="text-2xl font-bold mb-4 text-blue-700 dark:text-blue-200">{selectedEvent.title}</h2>
-                  <div className="mb-2 text-gray-700 dark:text-gray-200"><b>Category:</b> {selectedEvent.category}</div>
-                  <div className="mb-2 text-gray-700 dark:text-gray-200"><b>Description:</b> {selectedEvent.description || '—'}</div>
-                  <div className="mb-2 text-gray-700 dark:text-gray-200"><b>Time:</b> {formatTime(selectedEvent.start)} - {formatTime(selectedEvent.end)}</div>
-                  <div className="flex gap-2 mt-6">
-                    <button className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded transition flex items-center justify-center gap-2" onClick={() => setEditMode(true)}><MdEdit /> Edit</button>
-                    <button className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 rounded transition flex items-center justify-center gap-2" onClick={() => handleDeleteEvent(selectedEvent)}><MdDelete /> Delete</button>
-                  </div>
-                </>
-              ) : (
-                <EditEventForm event={selectedEvent} onSave={handleEditEvent} onCancel={() => setEditMode(false)} />
-              )}
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className={`relative w-full max-w-lg backdrop-blur-xl rounded-3xl border shadow-2xl ${
+              darkMode 
+                ? "bg-slate-800/95 border-slate-700/50" 
+                : "bg-white/95 border-gray-200/50"
+            }`}>
+              <div className="p-8">
+                <button
+                  onClick={() => { setSelectedEvent(null); setEditMode(false); }}
+                  className={`absolute top-4 right-4 p-2 rounded-full transition-all duration-200 ${
+                    darkMode 
+                      ? "text-gray-400 hover:text-white hover:bg-slate-700" 
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  <FiX className="w-5 h-5" />
+                </button>
+
+                {!editMode ? (
+                  <>
+                    <div className="mb-6">
+                      <h2 className={`text-2xl font-bold mb-2 ${
+                        darkMode ? "text-white" : "text-gray-900"
+                      }`}>
+                        {selectedEvent.title}
+                      </h2>
+                      <div className="flex items-center space-x-4">
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                          darkMode 
+                            ? "bg-blue-500/20 text-blue-400" 
+                            : "bg-blue-100 text-blue-600"
+                        }`}>
+                          {selectedEvent.category}
+                        </span>
+                        <div className="flex items-center space-x-1">
+                          <FiClock className={`w-4 h-4 ${
+                            darkMode ? "text-gray-400" : "text-gray-500"
+                          }`} />
+                          <span className={`text-sm ${
+                            darkMode ? "text-gray-300" : "text-gray-600"
+                          }`}>
+                            {formatTime(selectedEvent.start)} - {formatTime(selectedEvent.end)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {selectedEvent.description && (
+                      <div className="mb-6">
+                        <p className={`${
+                          darkMode ? "text-gray-300" : "text-gray-700"
+                        }`}>
+                          {selectedEvent.description}
+                        </p>
+                      </div>
+                    )}
+
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={() => setEditMode(true)}
+                        className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                          darkMode 
+                            ? "bg-blue-600 text-white hover:bg-blue-700" 
+                            : "bg-blue-600 text-white hover:bg-blue-700"
+                        }`}
+                      >
+                        <FiEdit2 className="w-4 h-4" />
+                        <span>Edit</span>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteEvent(selectedEvent)}
+                        className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                          darkMode 
+                            ? "bg-red-600 text-white hover:bg-red-700" 
+                            : "bg-red-600 text-white hover:bg-red-700"
+                        }`}
+                      >
+                        <FiTrash2 className="w-4 h-4" />
+                        <span>Delete</span>
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <EditEventForm 
+                    event={selectedEvent} 
+                    onSave={handleEditEvent} 
+                    onCancel={() => setEditMode(false)} 
+                  />
+                )}
+              </div>
             </div>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 };

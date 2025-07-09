@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FiSearch } from "react-icons/fi";
-import { IoMdNotificationsOutline } from "react-icons/io";
-import { FaUserCircle, FaSun, FaMoon, FaSignOutAlt, FaUserCog, FaUser } from "react-icons/fa";
+import { FiSearch, FiBell, FiMoon, FiSun } from "react-icons/fi";
+import { FaUserCircle, FaSignOutAlt, FaUserCog, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
 function TopNavbar({ darkMode, setDarkMode }) {
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [searchValue, setSearchValue] = useState("");
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
@@ -84,110 +84,176 @@ function TopNavbar({ darkMode, setDarkMode }) {
   };
 
   return (
-    <header className={`sticky top-0 z-40 w-full flex items-center justify-between px-6 py-3 shadow-sm border-b transition-colors duration-300 ${darkMode ? "bg-[#18181b] border-gray-800" : "bg-white border-gray-200"}`}>
-      {/* Search Bar */}
-      <div className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm ${darkMode ? "bg-[#23232a]" : "bg-gray-100"}`} style={{ minWidth: 220 }}>
-        <FiSearch className={`w-5 h-5 ${darkMode ? "text-gray-400" : "text-gray-500"}`} />
-        <input
-          type="text"
-          placeholder="Search..."
-          className={`bg-transparent outline-none text-sm w-full ${darkMode ? "text-white placeholder:text-gray-400" : "text-gray-700 placeholder:text-gray-500"}`}
-        />
-      </div>
+    <header className={`sticky top-0 z-40 w-full backdrop-blur-xl border-b transition-all duration-300 ${
+      darkMode 
+        ? "bg-slate-900/95 border-slate-700/50" 
+        : "bg-white/95 border-gray-200/50"
+    }`}>
+      <div className="flex items-center justify-between h-16 px-6">
+        {/* Search Bar */}
+        <div className="flex-1 max-w-md">
+          <div className={`relative flex items-center rounded-2xl transition-all duration-200 ${
+            darkMode 
+              ? "bg-slate-800/50 border border-slate-700/50" 
+              : "bg-gray-50 border border-gray-200/50"
+          }`}>
+            <FiSearch className={`absolute left-4 w-5 h-5 ${
+              darkMode ? "text-gray-400" : "text-gray-500"
+            }`} />
+            <input
+              type="text"
+              placeholder="Search events, tasks, or notes..."
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              className={`w-full pl-12 pr-4 py-3 bg-transparent rounded-2xl outline-none transition-all duration-200 ${
+                darkMode 
+                  ? "text-white placeholder-gray-400 focus:ring-2 focus:ring-blue-500/20" 
+                  : "text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-500/20"
+              }`}
+            />
+          </div>
+        </div>
 
-      {/* Right Section: Theme, Notifications, User/Auth */}
-      <div className="flex items-center gap-4">
-        {/* Theme Toggle */}
-        <button
-          onClick={() => setDarkMode(prev => !prev)}
-          aria-label={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-          className={`relative w-11 h-11 flex items-center justify-center rounded-full shadow-md border transition duration-300 group
-            ${darkMode ? "bg-[#23232a] border-gray-700 hover:bg-gray-800" : "bg-white border-gray-200 hover:bg-gray-100"}`}
-        >
-          <span className="sr-only">Toggle Theme</span>
-          {darkMode ? (
-            <FaSun className="w-6 h-6 text-yellow-300 group-hover:scale-110 transition-transform" />
-          ) : (
-            <FaMoon className="w-6 h-6 text-blue-500 group-hover:scale-110 transition-transform" />
+        {/* Right Section */}
+        <div className="flex items-center space-x-4">
+          {/* Theme Toggle */}
+          <button
+            onClick={() => setDarkMode(prev => !prev)}
+            className={`p-3 rounded-2xl transition-all duration-200 ${
+              darkMode 
+                ? "bg-slate-800/50 text-yellow-400 hover:bg-slate-700/50" 
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+            title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+          >
+            {darkMode ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
+          </button>
+
+          {/* Notifications */}
+          {user && (
+            <button className={`relative p-3 rounded-2xl transition-all duration-200 ${
+              darkMode 
+                ? "bg-slate-800/50 text-gray-400 hover:bg-slate-700/50 hover:text-white" 
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
+            }`}>
+              <FiBell className="w-5 h-5" />
+              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                2
+              </span>
+            </button>
           )}
-        </button>
 
-        {/* Notifications */}
-        {user && (
-          <div className="relative group">
-            <button
-              className={`w-11 h-11 flex items-center justify-center rounded-full transition-colors duration-200 shadow-md border ${darkMode ? "bg-[#23232a] border-gray-700 hover:bg-gray-800" : "bg-white border-gray-200 hover:bg-gray-100"}`}
-              title="Pending Invites"
-            >
-              <IoMdNotificationsOutline className="w-6 h-6 text-blue-500" />
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-[#23232a]" />
-            </button>
-            <span className="absolute left-1/2 -bottom-7 -translate-x-1/2 px-2 py-1 text-xs rounded bg-gray-900 text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-lg">2 pending invites</span>
-          </div>
-        )}
-
-        {/* User Profile or Auth Buttons */}
-        {user ? (
-          <div className="relative" ref={dropdownRef}>
-            <button
-              className="flex items-center gap-2 px-3 py-2 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold shadow-md hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 focus:outline-none"
-              onClick={handleProfileClick}
-              title="Account Menu"
-            >
-              <FaUserCircle className="w-7 h-7" />
-              <span className="hidden sm:block max-w-[120px] truncate text-sm font-medium">{getUserDisplayName()}</span>
-            </button>
-            {/* Dropdown */}
-            {showDropdown && (
-              <div className={`absolute right-0 top-full mt-2 w-56 rounded-xl shadow-2xl border z-50 ${darkMode ? "bg-[#23232a] border-gray-700 text-white" : "bg-white border-gray-200 text-black"}`}>
-                <div className="py-2">
-                  <div className={`px-4 py-2 border-b flex items-center gap-2 ${darkMode ? "border-gray-700" : "border-gray-200"}`}>
-                    <FaUser className="w-4 h-4 text-blue-500" />
-                    <span className="text-sm font-medium truncate">{getUserDisplayName()}</span>
-                  </div>
-                  <button
-                    onClick={() => { setShowDropdown(false); navigate('/profile'); }}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    <FaUserCog className="w-4 h-4 text-indigo-500" />
-                    View Profile
-                  </button>
-                  <button
-                    onClick={() => { setShowDropdown(false); navigate('/settings'); }}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-sm hover:bg-blue-50 dark:hover:bg-gray-800 transition-colors"
-                  >
-                    <FaUserCog className="w-4 h-4 text-indigo-500" />
-                    Settings
-                  </button>
-                  <div className={`border-t ${darkMode ? "border-gray-700" : "border-gray-200"} mt-2`} />
-                  <button
-                    onClick={handleLogout}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900 dark:hover:bg-opacity-20 transition-colors"
-                  >
-                    <FaSignOutAlt className="w-4 h-4" />
-                    Sign Out
-                  </button>
+          {/* User Profile or Auth Buttons */}
+          {user ? (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={handleProfileClick}
+                className={`flex items-center space-x-3 p-2 rounded-2xl transition-all duration-200 ${
+                  darkMode 
+                    ? "bg-slate-800/50 hover:bg-slate-700/50" 
+                    : "bg-gray-100 hover:bg-gray-200"
+                }`}
+              >
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                  <FaUserCircle className="w-5 h-5 text-white" />
                 </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate("/signin")}
-              className="px-5 py-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold shadow-md hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm"
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => navigate("/signup")}
-              className="px-5 py-2 rounded-full bg-gradient-to-r from-green-400 to-blue-500 text-white font-semibold shadow-md hover:from-green-500 hover:to-blue-600 transition-all duration-200 text-sm"
-            >
-              Sign Up
-            </button>
-          </div>
-        )}
+                <span className={`font-medium text-sm max-w-[120px] truncate ${
+                  darkMode ? "text-white" : "text-gray-900"
+                }`}>
+                  {getUserDisplayName()}
+                </span>
+              </button>
+
+              {/* Dropdown Menu */}
+              {showDropdown && (
+                <div className={`absolute right-0 top-full mt-2 w-64 rounded-2xl shadow-2xl border backdrop-blur-xl z-50 ${
+                  darkMode 
+                    ? "bg-slate-800/95 border-slate-700/50" 
+                    : "bg-white/95 border-gray-200/50"
+                }`}>
+                  <div className="p-4 border-b border-gray-200/20">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+                        <FaUser className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className={`font-semibold ${
+                          darkMode ? "text-white" : "text-gray-900"
+                        }`}>
+                          {getUserDisplayName()}
+                        </p>
+                        <p className={`text-sm ${
+                          darkMode ? "text-gray-400" : "text-gray-600"
+                        }`}>
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="p-2">
+                    <button
+                      onClick={() => { setShowDropdown(false); navigate('/profile'); }}
+                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                        darkMode 
+                          ? "text-gray-300 hover:bg-slate-700/50 hover:text-white" 
+                          : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                      }`}
+                    >
+                      <FaUserCog className="w-5 h-5" />
+                      <span>Profile Settings</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => { setShowDropdown(false); navigate('/settings'); }}
+                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                        darkMode 
+                          ? "text-gray-300 hover:bg-slate-700/50 hover:text-white" 
+                          : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
+                      }`}
+                    >
+                      <FaUserCog className="w-5 h-5" />
+                      <span>Preferences</span>
+                    </button>
+                    
+                    <hr className="my-2 border-gray-200/20" />
+                    
+                    <button
+                      onClick={handleLogout}
+                      className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                        darkMode 
+                          ? "text-red-400 hover:bg-red-500/10" 
+                          : "text-red-600 hover:bg-red-50"
+                      }`}
+                    >
+                      <FaSignOutAlt className="w-5 h-5" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={() => navigate("/signin")}
+                className={`px-6 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
+                  darkMode 
+                    ? "text-white hover:bg-slate-800/50" 
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => navigate("/signup")}
+                className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              >
+                Get Started
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </header>
   );

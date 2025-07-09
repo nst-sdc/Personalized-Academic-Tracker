@@ -21,7 +21,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/hero" element={<MainHeroPage darkMode={darkMode} />} />
+        <Route path="/hero" element={<MainHeroPage darkMode={darkMode} setDarkMode={setDarkMode} />} />
         <Route
           path="/*"
           element={<HomePageLayout darkMode={darkMode} setDarkMode={setDarkMode} />}
@@ -35,5 +35,3 @@ function App() {
 }
 
 export default App;
-
-
