@@ -1,83 +1,74 @@
-import React, { useState } from "react";
-import { GoogleOAuthProvider, GoogleLogin, googleLogout } from '@react-oauth/google';
-import { IoIosArrowBack, IoIosArrowForward, IoMdMenu, IoMdClose } from "react-icons/io";
-
-const CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"; // TODO: Replace with your Google OAuth Client ID
+import React from "react";
+import FullCalendar from "@fullcalendar/react";
+import dayGridPlugin from "@fullcalendar/daygrid";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import "./Calendar.css"; // We'll create this file for custom styles
 
 const Calendar = ({ darkMode }) => {
-  const [user, setUser] = useState(null);
-
-  // This function will be called after successful login
-  const handleLoginSuccess = (credentialResponse) => {
-    // Decode the credential to get user info (e.g., email)
-    const base64Url = credentialResponse.credential.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(
-      atob(base64)
-        .split('')
-        .map(function(c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        })
-        .join('')
-    );
-    const userInfo = JSON.parse(jsonPayload);
-    setUser(userInfo);
-  };
-
-  const handleLogout = () => {
-    googleLogout();
-    setUser(null);
-  };
-
-  let calendarURL = null;
-  if (user && user.email) {
-    calendarURL = `https://calendar.google.com/calendar/embed?src=${encodeURIComponent(user.email)}&ctz=Asia%2FKolkata`;
-  }
+  const events = [
+    {
+      title: "Assignment 1 Due",
+      start: "2024-07-29T10:00:00",
+      end: "2024-07-29T11:00:00",
+      allDay: false,
+      backgroundColor: "#ef4444",
+      borderColor: "#ef4444",
+    },
+    {
+      title: "Quiz",
+      start: "2024-07-30",
+      allDay: true,
+      backgroundColor: "#f97316",
+      borderColor: "#f97316",
+    },
+    {
+      title: "Project Submission",
+      start: "2024-08-05",
+      allDay: true,
+      backgroundColor: "#10b981",
+      borderColor: "#10b981",
+    },
+    {
+      title: "Mid-term Exam",
+      start: "2024-08-15",
+      end: "2024-08-17",
+      allDay: true,
+      backgroundColor: "#3b82f6",
+      borderColor: "#3b82f6",
+    },
+  ];
 
   return (
-    <GoogleOAuthProvider clientId={CLIENT_ID}>
-      <div className={`flex h-[calc(100vh-0px)] w-full transition-colors duration-300 ${darkMode ? "bg-black text-white" : "bg-white text-black"}`}>
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col items-center justify-center px-2 sm:px-8 py-8 relative">
-          <div className={`w-full max-w-4xl mx-auto rounded-2xl shadow-xl p-8 ${darkMode ? 'bg-[#18181b]' : 'bg-white'} transition-colors duration-300`}>
-            <div className="flex items-center justify-between mb-8">
-              <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-                <span role="img" aria-label="calendar">📅</span> Academic Calendar
-              </h1>
-              {user && (
-                <button onClick={handleLogout} className="px-4 py-2 bg-red-500 text-white rounded shadow hover:bg-red-600 transition">Logout</button>
-              )}
-            </div>
-            {!user ? (
-              <div className="flex flex-col items-center justify-center min-h-[350px]">
-                <GoogleLogin
-                  onSuccess={handleLoginSuccess}
-                  onError={() => alert('Login Failed')}
-                  useOneTap
-                />
-                <p className="mt-6 text-lg text-gray-500 dark:text-gray-400 text-center max-w-md">
-                  Login with your Google account to view your personalized academic calendar.
-                </p>
-              </div>
-            ) : (
-              <div className="w-full flex justify-center">
-                <iframe
-                  src={calendarURL}
-                  style={{ border: 0 }}
-                  width="1000"
-                  height="600"
-                  frameBorder="0"
-                  scrolling="no"
-                  title="Google Calendar"
-                  className="rounded-xl shadow-lg"
-                ></iframe>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </GoogleOAuthProvider>
+    <div className={`p-4 sm:p-8 calendar-container ${darkMode ? "dark" : ""}`}>
+      <FullCalendar
+        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+        initialView="dayGridMonth"
+        headerToolbar={{
+          left: "prev,next today",
+          center: "title",
+          right: "dayGridMonth,timeGridWeek,timeGridDay",
+        }}
+        events={events}
+        editable={true}
+        selectable={true}
+        selectMirror={true}
+        dayMaxEvents={true}
+        weekends={true}
+        height="auto"
+        eventContent={renderEventContent}
+      />
+    </div>
   );
 };
+
+function renderEventContent(eventInfo) {
+  return (
+    <>
+      <b>{eventInfo.timeText}</b>
+      <i>{eventInfo.event.title}</i>
+    </>
+  );
+}
 
 export default Calendar;

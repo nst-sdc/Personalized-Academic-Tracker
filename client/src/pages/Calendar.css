@@ -1,0 +1,110 @@
+/* General Calendar Container */
+.calendar-container {
+  height: calc(100vh - 120px); /* Adjust based on your layout's header/footer height */
+  display: flex;
+  flex-direction: column;
+}
+
+/* FullCalendar component itself */
+.fc {
+  flex-grow: 1;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Header Toolbar */
+.fc .fc-toolbar {
+  background-color: transparent;
+  border: none;
+  margin-bottom: 1.5rem;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.75rem;
+  font-weight: bold;
+}
+
+/* Buttons */
+.fc .fc-button {
+  background-color: #3b82f6;
+  border: 1px solid #3b82f6;
+  color: white;
+  text-transform: capitalize;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.fc .fc-button:hover {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.fc .fc-icon {
+  font-size: 1.1rem;
+}
+
+/* Today Button */
+.fc .fc-today-button {
+  background-color: #10b981;
+  border-color: #10b981;
+}
+
+.fc .fc-today-button:hover {
+  background-color: #059669;
+  border-color: #059669;
+}
+
+/* Day Headers */
+.fc .fc-col-header-cell {
+  background-color: transparent;
+  border: none;
+  padding: 0.75rem 0;
+  font-weight: 600;
+}
+
+/* Day Grid */
+.fc .fc-daygrid-day {
+  border-color: #e5e7eb;
+}
+
+.fc .fc-day-today {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+/* Event Styling */
+.fc .fc-event {
+  cursor: pointer;
+  font-weight: 500;
+  padding: 4px 6px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* ------------------- */
+/*      DARK MODE      */
+/* ------------------- */
+.dark .fc .fc-toolbar-title,
+.dark .fc .fc-col-header-cell-cushion,
+.dark .fc .fc-daygrid-day-number {
+  color: #aaaaaa;
+}
+
+.dark .fc .fc-daygrid-day {
+  border-color: #374151;
+}
+
+.dark .fc .fc-day-today {
+  background-color: rgba(59, 130, 246, 0.2);
+}
+
+.dark .fc .fc-list-event:hover td {
+  background-color: #374151;
+}
+
+.dark .fc .fc-timegrid-slot {
+  border-color: #374151;
+} 

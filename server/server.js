@@ -8,6 +8,7 @@ const { errorHandler, notFound } = require('./middleware/errorHandler');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
+const eventRoutes = require('./routes/eventRoutes');
 
 // Create Express app
 const app = express();
@@ -44,6 +45,8 @@ app.get('/api/health', (req, res) => {
 
 // API Routes - Main auth routes
 app.use('/api/auth', authRoutes);
+
+app.use('/api/events', eventRoutes);
 
 // Direct routes for convenience (optional - if you want /api/signup to work)
 app.use('/api', authRoutes);

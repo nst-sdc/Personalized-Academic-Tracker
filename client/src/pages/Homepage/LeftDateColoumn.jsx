@@ -1,129 +1,312 @@
 import React, { useState } from "react";
-import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import { FiChevronLeft, FiChevronRight, FiCalendar, FiClock } from "react-icons/fi";
+import EditEventForm from "./EditEventForm";
+import AddEventModal from "./AddEventModal";
+import api from "../../utils/api";
+import AddToGoogleCalendarButton from "./AddToGoogleCalendarButton";
 
-const monthNames = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
+function getStartOfWeek(date) {
+  const d = new Date(date);
+  d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
 
-const LeftDateColumn = ({ darkMode }) => {
-  const bgMain = darkMode ? "bg-[#0D0D0D]" : "bg-white";
-  const textPrimary = darkMode ? "text-white" : "text-[#333333]";
-  const textSecondary = darkMode ? "text-gray-300" : "text-gray-500";
-  const textLight = darkMode ? "text-gray-300" : "text-gray-400";
-  const cardBg = darkMode ? "bg-[#1E1E1E]" : "bg-white";
-  const highlightCardBg = darkMode ? "bg-[#2A2A2A]" : "bg-cyan-50";
+function getEndOfWeek(date) {
+  const d = getStartOfWeek(date);
+  d.setDate(d.getDate() + 6);
+  d.setHours(23, 59, 59, 999);
+  return d;
+}
 
-  // State for month and year
+const LeftDateColumn = ({ darkMode, events = [], setEvents }) => {
   const today = new Date();
-  const [month, setMonth] = useState(today.getMonth());
-  const [year, setYear] = useState(today.getFullYear());
+  const [weekRef, setWeekRef] = useState(getStartOfWeek(today));
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [editMode, setEditMode] = useState(false);
 
-  const handlePrevMonth = () => {
-    setMonth(prev => {
-      if (prev === 0) {
-        setYear(y => y - 1);
-        return 11;
-      }
-      return prev - 1;
+  const handlePrevWeek = () => {
+    setWeekRef(prev => {
+      const d = new Date(prev);
+      d.setDate(d.getDate() - 7);
+      return getStartOfWeek(d);
     });
   };
 
-  const handleNextMonth = () => {
-    setMonth(prev => {
-      if (prev === 11) {
-        setYear(y => y + 1);
-        return 0;
-      }
-      return prev + 1;
+  const handleNextWeek = () => {
+    setWeekRef(prev => {
+      const d = new Date(prev);
+      d.setDate(d.getDate() + 7);
+      return getStartOfWeek(d);
     });
+  };
+
+  const handleAddEvent = (newEvent) => {
+    setEvents(prev => [...prev, newEvent]);
+  };
+
+  // Filter for all events in the selected week
+  const weekStart = getStartOfWeek(weekRef);
+  const weekEnd = getEndOfWeek(weekRef);
+  const weekEvents = events
+    .filter(ev => ev.start && new Date(ev.start) >= weekStart && new Date(ev.start) <= weekEnd)
+    .sort((a, b) => new Date(a.start) - new Date(b.start));
+
+  const weekLabel = `${weekStart.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} - ${weekEnd.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+
+  const handleEditEvent = async (updatedEvent) => {
+    try {
+      const eventId = updatedEvent.id || updatedEvent._id;
+      if (!eventId) {
+        alert('Event is missing an id! Edit will not work.');
+        return;
+      }
+      const response = await api.put(`/events/${eventId}`, updatedEvent);
+      setEvents(prev => prev.map(ev => (ev.id || ev._id) === eventId ? response.data.data : ev));
+      setSelectedEvent(null);
+      setEditMode(false);
+    } catch (error) {
+      alert(`Failed to update event: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
+  const handleDeleteEvent = async (eventToDelete) => {
+    try {
+      const eventId = eventToDelete.id || eventToDelete._id;
+      if (!eventId) {
+        alert('Invalid event ID');
+        return;
+      }
+      await api.delete(`/events/${eventId}`);
+      setEvents(prev => prev.filter(ev => (ev.id || ev._id) !== eventId));
+      setSelectedEvent(null);
+      setEditMode(false);
+    } catch (error) {
+      alert(`Failed to delete event: ${error.response?.data?.message || error.message}`);
+    }
   };
 
   return (
-    <div
-      className={`w-80 ${bgMain} p-6 flex-shrink-0 h-[calc(100vh-70px)] overflow-y-auto transition-colors duration-300 font-khula`}
-    >
-      <div className="flex items-center justify-between mb-8">
-        <button aria-label="Previous month" className={`p-1 ${textLight}`} onClick={handlePrevMonth}>
-          <IoIosArrowBack size={20} />
-        </button>
-        <h2 className={`text-lg font-medium ${textPrimary}`}>
-          {monthNames[month]} {year}
-        </h2>
-        <button aria-label="Next month" className={`p-1 ${textLight}`} onClick={handleNextMonth}>
-          <IoIosArrowForward size={20} />
-        </button>
-      </div>
-
-      <div className="mb-10">
-        <div className="text-left">
-          <span className={`text-3xl font-light ${textLight}`}>This </span>
-          <span className={`text-5xl font-bold ${textPrimary}`}>Week</span>
-        </div>
-      </div>
-
-      <div className={`${highlightCardBg} rounded-lg p-4 mb-10`}>
-        <div className="flex items-center gap-3 mb-4">
-          <span className="bg-[#59C3C8] text-white text-xs px-2 py-1 rounded">Today</span>
-          <span className={`text-sm font-medium ${textPrimary}`}>Fundamentals of Design</span>
-        </div>
-
-        <div className="flex items-start gap-3 mb-3">
-          <div className={`text-[60px] font-semibold leading-tight ${textPrimary}`}>M</div>
-          <div className="flex-1 pt-1">
-            <div className={`font-medium text-base mb-1 ${textPrimary}`}>Ergonomics</div>
-            <div className={`text-xs ${textSecondary}`}>11:00 → 12:00</div>
+    <div className={`w-80 h-screen backdrop-blur-xl border-r transition-all duration-300 ${
+      darkMode 
+        ? "bg-slate-900/95 border-slate-700/50" 
+        : "bg-white/95 border-gray-200/50"
+    }`}>
+      <div className="p-6 h-full overflow-y-auto">
+        {/* Week Navigation */}
+        <div className="flex items-center justify-between mb-8">
+          <button
+            onClick={handlePrevWeek}
+            className={`p-2 rounded-xl transition-all duration-200 ${
+              darkMode 
+                ? "text-gray-400 hover:text-white hover:bg-slate-800" 
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            }`}
+          >
+            <FiChevronLeft className="w-5 h-5" />
+          </button>
+          
+          <div className="text-center">
+            <h2 className={`text-sm font-semibold ${
+              darkMode ? "text-white" : "text-gray-900"
+            }`}>
+              {weekLabel}
+            </h2>
           </div>
+          
+          <button
+            onClick={handleNextWeek}
+            className={`p-2 rounded-xl transition-all duration-200 ${
+              darkMode 
+                ? "text-gray-400 hover:text-white hover:bg-slate-800" 
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            }`}
+          >
+            <FiChevronRight className="w-5 h-5" />
+          </button>
         </div>
 
-        <div className="flex items-end justify-between">
-          <div className={`text-2xl font-light ${textLight}`}>10th</div>
-          <div className="text-right">
-            <div className={`text-sm font-medium mb-1 ${textPrimary}`}>
-              Tales of Women in Design
+        {/* Title */}
+        <div className="mb-8">
+          <h1 className={`text-2xl font-bold ${
+            darkMode ? "text-white" : "text-gray-900"
+          }`}>
+            This Week
+          </h1>
+          <p className={`text-sm mt-1 ${
+            darkMode ? "text-gray-400" : "text-gray-600"
+          }`}>
+            {weekEvents.length} events scheduled
+          </p>
+        </div>
+
+        {/* Events List */}
+        <div className="space-y-4">
+          {weekEvents.length === 0 ? (
+            <div className={`p-6 rounded-2xl border-2 border-dashed text-center ${
+              darkMode 
+                ? "border-gray-600 bg-slate-800/30" 
+                : "border-gray-300 bg-gray-50"
+            }`}>
+              <FiCalendar className={`w-8 h-8 mx-auto mb-3 ${
+                darkMode ? "text-gray-500" : "text-gray-400"
+              }`} />
+              <p className={`text-sm font-medium ${
+                darkMode ? "text-gray-400" : "text-gray-600"
+              }`}>
+                No events this week
+              </p>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-0.5 bg-red-500 rounded"></div>
-              <span className="text-xs font-medium text-red-500">Begins in 30m</span>
+          ) : (
+            weekEvents.map((event, idx) => {
+              const start = new Date(event.start);
+              const end = new Date(event.end);
+              const isToday = start.toDateString() === today.toDateString();
+              const eventKey = event.id || event._id || `event-${idx}`;
+              
+              return (
+                <div
+                  key={eventKey}
+                  className={`group relative p-4 rounded-2xl border transition-all duration-200 cursor-pointer hover:shadow-lg ${
+                    darkMode 
+                      ? "bg-slate-800/50 border-slate-700/50 hover:bg-slate-800/80" 
+                      : "bg-white/80 border-gray-200/50 hover:bg-white"
+                  } ${isToday ? 'ring-2 ring-blue-500/20' : ''}`}
+                  onClick={() => { setSelectedEvent(event); setEditMode(false); }}
+                >
+                  {/* Google Calendar Button */}
+                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <AddToGoogleCalendarButton event={event} small />
+                  </div>
+
+                  {/* Today Badge */}
+                  {isToday && (
+                    <div className="absolute -top-2 -right-2 px-2 py-1 bg-blue-500 text-white text-xs font-medium rounded-full">
+                      Today
+                    </div>
+                  )}
+
+                  {/* Event Content */}
+                  <div className="mb-3">
+                    <h3 className={`font-semibold mb-1 pr-8 ${
+                      darkMode ? "text-white" : "text-gray-900"
+                    }`}>
+                      {event.title}
+                    </h3>
+                    <div className="flex items-center space-x-2">
+                      <FiClock className={`w-4 h-4 ${
+                        darkMode ? "text-gray-400" : "text-gray-500"
+                      }`} />
+                      <span className={`text-sm ${
+                        darkMode ? "text-gray-300" : "text-gray-600"
+                      }`}>
+                        {start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Category */}
+                  {event.category && (
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                      darkMode 
+                        ? "bg-blue-500/20 text-blue-400" 
+                        : "bg-blue-100 text-blue-600"
+                    }`}>
+                      {event.category}
+                    </span>
+                  )}
+
+                  {/* Day Info */}
+                  <div className="mt-3 pt-3 border-t border-gray-200/20">
+                    <div className="flex items-center justify-between">
+                      <span className={`text-sm font-medium ${
+                        darkMode ? "text-gray-400" : "text-gray-600"
+                      }`}>
+                        {start.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric' })}
+                      </span>
+                      <span className={`text-xs ${
+                        darkMode ? "text-gray-500" : "text-gray-500"
+                      }`}>
+                        {start.toLocaleDateString(undefined, { month: 'short' })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Event Details Modal */}
+        {selectedEvent && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+            <div className={`relative w-full max-w-md backdrop-blur-xl rounded-3xl border shadow-2xl ${
+              darkMode 
+                ? "bg-slate-800/95 border-slate-700/50" 
+                : "bg-white/95 border-gray-200/50"
+            }`}>
+              <div className="p-6">
+                <button
+                  onClick={() => { setSelectedEvent(null); setEditMode(false); }}
+                  className={`absolute top-4 right-4 p-2 rounded-full transition-all duration-200 ${
+                    darkMode 
+                      ? "text-gray-400 hover:text-white hover:bg-slate-700" 
+                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  ×
+                </button>
+
+                {!editMode ? (
+                  <>
+                    <h2 className={`text-xl font-bold mb-4 ${
+                      darkMode ? "text-white" : "text-gray-900"
+                    }`}>
+                      {selectedEvent.title}
+                    </h2>
+                    <div className="space-y-3 mb-6">
+                      <div className={`${
+                        darkMode ? "text-gray-300" : "text-gray-700"
+                      }`}>
+                        <strong>Category:</strong> {selectedEvent.category}
+                      </div>
+                      <div className={`${
+                        darkMode ? "text-gray-300" : "text-gray-700"
+                      }`}>
+                        <strong>Description:</strong> {selectedEvent.description || '—'}
+                      </div>
+                      <div className={`${
+                        darkMode ? "text-gray-300" : "text-gray-700"
+                      }`}>
+                        <strong>Time:</strong> {new Date(selectedEvent.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - {new Date(selectedEvent.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    </div>
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={() => setEditMode(true)}
+                        className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDeleteEvent(selectedEvent)}
+                        className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-200"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <EditEventForm 
+                    event={selectedEvent} 
+                    onSave={handleEditEvent} 
+                    onCancel={() => setEditMode(false)} 
+                  />
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div className={`${cardBg} rounded-lg p-4 mb-10`}>
-        <div className="flex items-start gap-3 mb-3">
-          <div className={`text-[60px] font-semibold leading-tight ${textPrimary}`}>T</div>
-          <div className="flex-1 pt-1">
-            <div className={`font-medium text-base mb-1 ${textPrimary}`}>
-              Research Methodologies
-            </div>
-            <div className={`text-xs ${textSecondary}`}>13:00 → 14:00</div>
-          </div>
-        </div>
-
-        <div className="flex items-end justify-between">
-          <div className={`text-2xl font-light ${textLight}`}>11th</div>
-          <div className="text-right">
-            <div className={`text-sm font-medium mb-1 ${textPrimary}`}>
-              Approaches to Culture
-            </div>
-            <div className={`text-xs ${textSecondary}`}>16:00 → 17:00</div>
-          </div>
-        </div>
-      </div>
-
-      <div className={`${cardBg} rounded-lg p-4`}>
-        <div className="flex items-start gap-3 mb-3">
-          <div className={`text-[60px] font-semibold leading-tight ${textPrimary}`}>W</div>
-          <div className="flex-1 pt-1">
-            <div className={`font-medium text-base mb-1 ${textPrimary}`}>
-              Introduction to Narratology
-            </div>
-            <div className={`text-xs ${textSecondary}`}>11:00 → 12:00</div>
-          </div>
-        </div>
-
-        <div className={`text-2xl font-light ${textLight}`}>12th</div>
+        )}
       </div>
     </div>
   );
