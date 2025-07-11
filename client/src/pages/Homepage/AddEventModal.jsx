@@ -88,8 +88,8 @@ export default function AddEventModal({ open, onClose, onSave }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="relative w-full max-w-lg backdrop-blur-xl rounded-3xl border shadow-2xl bg-white/95 dark:bg-slate-800/95 border-gray-200/50 dark:border-slate-700/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto backdrop-blur-xl rounded-3xl border shadow-2xl bg-white/95 dark:bg-slate-800/95 border-gray-200/50 dark:border-slate-700/50">
         <div className="p-8">
           <button
             onClick={onClose}
