@@ -38,13 +38,13 @@ function HomePageLayout({ darkMode, setDarkMode }) {
   const bgClass = darkMode ? "bg-black text-white" : "bg-white text-black";
 
   return (
-    <div className={`flex h-screen w-full transition-colors duration-300 ${bgClass}`}>
+    <div className={`flex min-h-screen w-full transition-colors duration-300 ${bgClass}`}>
       <Sidebar darkMode={darkMode} activeItem={activeItem} onNavClick={setActiveItem} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopNavbar darkMode={darkMode} setDarkMode={setDarkMode} />
 
-        <main className="flex flex-row w-full h-[calc(100vh-118px)]">
+        <main className="flex flex-row w-full min-h-full">
           {/* Left date column (optional) */}
           {showDateCol && (
             <div className="w-auto">
