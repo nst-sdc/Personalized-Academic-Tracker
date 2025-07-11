@@ -326,50 +326,83 @@ const getUserProfile = async (req, res) => {
 // @access  Private
 const updateUserProfile = async (req, res) => {
     try {
-        const { id } = req.params;
-        const { firstName, lastName, phone, countryCode } = req.body;
-
-        const user = await User.findById(id);
-
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
-        }
-
-        // Update only provided fields
-        if (firstName) user.firstName = firstName.trim();
-        if (lastName) user.lastName = lastName.trim();
-        if (phone) user.phone = phone.replace(/\s+/g, '');
-        if (countryCode) user.countryCode = countryCode;
-
-        user.updatedAt = new Date();
-        await user.save();
-
-        res.status(200).json({
-            success: true,
-            message: 'Profile updated successfully',
-            user: user
+      const { id } = req.params;
+      const { firstName, lastName } = req.body;
+  
+      // Validate that the user is updating their own profile
+      if (req.user.id !== id && req.user._id.toString() !== id) {
+        return res.status(403).json({
+          success: false,
+          message: 'You can only update your own profile'
         });
-
+      }
+  
+      // Validate required fields
+      if (!firstName || !lastName) {
+        return res.status(400).json({
+          success: false,
+          message: 'First name and last name are required'
+        });
+      }
+  
+      // Validate field lengths
+      if (firstName.trim().length < 2 || lastName.trim().length < 2) {
+        return res.status(400).json({
+          success: false,
+          message: 'First name and last name must be at least 2 characters long'
+        });
+      }
+  
+      // Find and update user
+      const user = await User.findByIdAndUpdate(
+        id,
+        {
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          updatedAt: new Date()
+        },
+        {
+          new: true,
+          runValidators: true
+        }
+      ).select('-password');
+  
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found'
+        });
+      }
+  
+      res.status(200).json({
+        success: true,
+        message: 'Profile updated successfully',
+        user: {
+          id: user._id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          isVerified: user.isVerified
+        }
+      });
+  
     } catch (error) {
-        console.error('Update profile error:', error);
-
-        if (error.code === 11000) {
-            const field = Object.keys(error.keyValue)[0];
-            return res.status(409).json({
-                success: false,
-                message: `${field} already exists. Please use a different ${field}.`
-            });
-        }
-
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error'
+      console.error('Error updating profile:', error);
+      
+      if (error.name === 'ValidationError') {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation error',
+          errors: Object.values(error.errors).map(err => err.message)
         });
+      }
+  
+      res.status(500).json({
+        success: false,
+        message: 'Server error occurred while updating profile'
+      });
     }
-};
+  };
 
 // @desc    Verify JWT token (used for session persistence)
 // @route   GET /api/auth/verify

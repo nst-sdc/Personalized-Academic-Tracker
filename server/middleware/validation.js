@@ -96,53 +96,54 @@ const validateLoginData = (req, res, next) => {
 };
 
 // Validation middleware for profile update
+// Add this to your validation middleware file
+// Or create a new validation function
+
 const validateProfileUpdate = (req, res, next) => {
-    const { firstName, lastName, phone, countryCode } = req.body;
-    
-    // Check if at least one field is provided for update
-    if (!firstName && !lastName && !phone && !countryCode) {
-        return res.status(400).json({
-            success: false,
-            message: 'At least one field is required for update'
-        });
+    const { firstName, lastName } = req.body;
+    const errors = [];
+  
+    // Check if required fields are provided
+    if (!firstName || typeof firstName !== 'string' || firstName.trim().length === 0) {
+      errors.push('First name is required');
+    } else if (firstName.trim().length < 2) {
+      errors.push('First name must be at least 2 characters long');
+    } else if (firstName.trim().length > 50) {
+      errors.push('First name cannot exceed 50 characters');
     }
-    
-    // Validate phone if provided
-    if (phone) {
-        const phoneRegex = /^[0-9]{10,15}$/;
-        if (!phoneRegex.test(phone.replace(/\s+/g, ''))) {
-            return res.status(400).json({
-                success: false,
-                message: 'Please provide a valid phone number (10-15 digits)'
-            });
-        }
+  
+    if (!lastName || typeof lastName !== 'string' || lastName.trim().length === 0) {
+      errors.push('Last name is required');
+    } else if (lastName.trim().length < 2) {
+      errors.push('Last name must be at least 2 characters long');
+    } else if (lastName.trim().length > 50) {
+      errors.push('Last name cannot exceed 50 characters');
     }
-    
-    // Validate name fields if provided
-    if (firstName && (firstName.trim().length < 2 || firstName.trim().length > 50)) {
-        return res.status(400).json({
-            success: false,
-            message: 'First name must be between 2 and 50 characters'
-        });
+  
+    // Check for invalid characters (only letters, spaces, hyphens, apostrophes)
+    const nameRegex = /^[a-zA-Z\s\-']+$/;
+    if (firstName && !nameRegex.test(firstName.trim())) {
+      errors.push('First name contains invalid characters');
     }
-    
-    if (lastName && (lastName.trim().length < 2 || lastName.trim().length > 50)) {
-        return res.status(400).json({
-            success: false,
-            message: 'Last name must be between 2 and 50 characters'
-        });
+    if (lastName && !nameRegex.test(lastName.trim())) {
+      errors.push('Last name contains invalid characters');
     }
-    
-    // Validate country code if provided
-    if (countryCode && !['+91', '+1', '+44', '+41'].includes(countryCode)) {
-        return res.status(400).json({
-            success: false,
-            message: 'Invalid country code'
-        });
+  
+    // If there are validation errors, return them
+    if (errors.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors
+      });
     }
-    
+  
+    // Sanitize the input
+    req.body.firstName = firstName.trim();
+    req.body.lastName = lastName.trim();
+  
     next();
-};
+  };
 
 module.exports = {
     validateSignupData,
