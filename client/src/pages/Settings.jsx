@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AiOutlineUser,
   AiOutlineLock,
@@ -42,12 +42,90 @@ const Settings = ({ darkMode, setDarkMode }) => {
   const [notifPush, setNotifPush] = useState(false);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [profileImage, setProfileImage] = useState(null);
+  const [user, setUser] = useState(null);
 
   const [editMode, setEditMode] = useState(false);
   const [profile, setProfile] = useState({
-    name: "Full Name",
-    email: "Email",
+    name: "",
+    email: "",
+    firstName: "",
+    lastName: "",
   });
+
+  // Check for user authentication on component mount
+  useEffect(() => {
+    const getUserData = () => {
+      try {
+        const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+        const userData = localStorage.getItem('user') || sessionStorage.getItem('user');
+        
+        if (token && userData) {
+          const parsedUser = JSON.parse(userData);
+          setUser(parsedUser);
+          
+          // Set profile data from user data
+          setProfile({
+            name: getUserDisplayName(parsedUser),
+            email: parsedUser.email || "",
+            firstName: parsedUser.firstName || "",
+            lastName: parsedUser.lastName || "",
+          });
+        }
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        setUser(null);
+      }
+    };
+
+    getUserData();
+
+    // Listen for storage changes
+    const handleStorageChange = (e) => {
+      if (e.key === 'authToken' || e.key === 'user') {
+        getUserData();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  const getUserDisplayName = (userData) => {
+    if (!userData) return 'User';
+    if (userData.firstName && userData.lastName) return `${userData.firstName} ${userData.lastName}`;
+    if (userData.firstName) return userData.firstName;
+    if (userData.lastName) return userData.lastName;
+    if (userData.name) return userData.name;
+    if (userData.email) return userData.email.split('@')[0];
+    return 'User';
+  };
+
+  const handleProfileSave = (e) => {
+    e.preventDefault();
+    
+    // Update user data in localStorage/sessionStorage
+    if (user) {
+      const updatedUser = {
+        ...user,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        name: profile.name,
+        email: profile.email,
+      };
+
+      // Update in both localStorage and sessionStorage
+      if (localStorage.getItem('user')) {
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+      if (sessionStorage.getItem('user')) {
+        sessionStorage.setItem('user', JSON.stringify(updatedUser));
+      }
+
+      setUser(updatedUser);
+    }
+    
+    setEditMode(false);
+  };
 
   const inputClass = `w-full px-4 py-3 border rounded-lg text-sm transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
     darkMode 
@@ -139,7 +217,7 @@ const Settings = ({ darkMode, setDarkMode }) => {
                       <div className={`w-20 h-20 flex items-center justify-center rounded-full text-2xl ${
                         darkMode ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'
                       }`}>
-                        <AiOutlineUser size={24} />
+                        <AiOutlineUser size={32} />
                       </div>
                     )}
 
@@ -169,7 +247,7 @@ const Settings = ({ darkMode, setDarkMode }) => {
                           }`}>Full Name</label>
                           <p className={`text-sm ${
                             darkMode ? 'text-gray-400' : 'text-gray-600'
-                          }`}>{profile.name}</p>
+                          }`}>{profile.name || 'Not set'}</p>
                         </div>
                         <div>
                           <label className={`block text-sm font-medium mb-1 ${
@@ -177,8 +255,28 @@ const Settings = ({ darkMode, setDarkMode }) => {
                           }`}>Email</label>
                           <p className={`text-sm ${
                             darkMode ? 'text-gray-400' : 'text-gray-600'
-                          }`}>{profile.email}</p>
+                          }`}>{profile.email || 'Not set'}</p>
                         </div>
+                        {user && (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className={`block text-sm font-medium mb-1 ${
+                                darkMode ? 'text-gray-300' : 'text-gray-700'
+                              }`}>First Name</label>
+                              <p className={`text-sm ${
+                                darkMode ? 'text-gray-400' : 'text-gray-600'
+                              }`}>{profile.firstName || 'Not set'}</p>
+                            </div>
+                            <div>
+                              <label className={`block text-sm font-medium mb-1 ${
+                                darkMode ? 'text-gray-300' : 'text-gray-700'
+                              }`}>Last Name</label>
+                              <p className={`text-sm ${
+                                darkMode ? 'text-gray-400' : 'text-gray-600'
+                              }`}>{profile.lastName || 'Not set'}</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                       <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                         <button
@@ -190,17 +288,41 @@ const Settings = ({ darkMode, setDarkMode }) => {
                       </div>
                     </div>
                   ) : (
-                    <form
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        setEditMode(false);
-                      }}
-                      className="space-y-4"
-                    >
+                    <form onSubmit={handleProfileSave} className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className={`block text-sm font-medium mb-2 ${
+                            darkMode ? 'text-gray-300' : 'text-gray-700'
+                          }`}>First Name</label>
+                          <input
+                            type="text"
+                            className={inputClass}
+                            value={profile.firstName}
+                            onChange={(e) =>
+                              setProfile((prev) => ({ ...prev, firstName: e.target.value }))
+                            }
+                            placeholder="Enter first name"
+                          />
+                        </div>
+                        <div>
+                          <label className={`block text-sm font-medium mb-2 ${
+                            darkMode ? 'text-gray-300' : 'text-gray-700'
+                          }`}>Last Name</label>
+                          <input
+                            type="text"
+                            className={inputClass}
+                            value={profile.lastName}
+                            onChange={(e) =>
+                              setProfile((prev) => ({ ...prev, lastName: e.target.value }))
+                            }
+                            placeholder="Enter last name"
+                          />
+                        </div>
+                      </div>
                       <div>
                         <label className={`block text-sm font-medium mb-2 ${
                           darkMode ? 'text-gray-300' : 'text-gray-700'
-                        }`}>Full Name</label>
+                        }`}>Display Name</label>
                         <input
                           type="text"
                           className={inputClass}
@@ -208,6 +330,7 @@ const Settings = ({ darkMode, setDarkMode }) => {
                           onChange={(e) =>
                             setProfile((prev) => ({ ...prev, name: e.target.value }))
                           }
+                          placeholder="Enter display name"
                         />
                       </div>
                       <div>
@@ -221,6 +344,7 @@ const Settings = ({ darkMode, setDarkMode }) => {
                           onChange={(e) =>
                             setProfile((prev) => ({ ...prev, email: e.target.value }))
                           }
+                          placeholder="Enter email address"
                         />
                       </div>
                       <div className="flex gap-3 pt-4">
