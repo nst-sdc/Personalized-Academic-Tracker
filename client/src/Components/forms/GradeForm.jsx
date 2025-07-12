@@ -61,10 +61,10 @@ const GradeForm = () => {
 
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto dark:bg-slate-900/95 dark:text-white">
       {/* Form */}
-      <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 bg-white p-4 rounded shadow mb-6">
-        <select name="semester" value={data.semester} onChange={handleChange} className="border p-2 rounded" required>
+      <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4 bg-white dark:bg-slate-900/95 dark:text-white p-4 rounded shadow mb-6">
+        <select name="semester" value={data.semester} onChange={handleChange} className="border p-2 rounded dark:bg-slate-900/95 dark:text-white dark:border-slate-700" required>
           <option value="">Select Semester</option>
           {semesters.map((s) => <option key={s}>{s}</option>)}
         </select>
@@ -73,7 +73,7 @@ const GradeForm = () => {
           type="date"
           value={data.date}
           onChange={handleChange}
-          className="border p-2 rounded"
+          className="border p-2 rounded dark:bg-slate-900/95 dark:text-white dark:border-slate-700"
           required
         />
         <input
@@ -81,7 +81,7 @@ const GradeForm = () => {
           placeholder="Course Name"
           value={data.courseName}
           onChange={handleChange}
-          className="border p-2 rounded"
+          className="border p-2 rounded dark:bg-slate-900/95 dark:text-white dark:border-slate-700"
           required
         />
         <input
@@ -89,7 +89,7 @@ const GradeForm = () => {
           placeholder="Assignment Title"
           value={data.assignmentTitle}
           onChange={handleChange}
-          className="border p-2 rounded"
+          className="border p-2 rounded dark:bg-slate-900/95 dark:text-white dark:border-slate-700"
           required
         />
         <input
@@ -98,14 +98,14 @@ const GradeForm = () => {
           type="number"
           value={data.marks}
           onChange={handleChange}
-          className="border p-2 rounded"
+          className="border p-2 rounded dark:bg-slate-900/95 dark:text-white dark:border-slate-700"
           required
         />
-        <select name="expectedGrade" value={data.expectedGrade} onChange={handleChange} className="border p-2 rounded">
+        <select name="expectedGrade" value={data.expectedGrade} onChange={handleChange} className="border p-2 rounded dark:bg-slate-900/95 dark:text-white dark:border-slate-700">
           <option value="">Expected Grade</option>
           {gradeOptions.map((g) => <option key={g}>{g}</option>)}
         </select>
-        <select name="finalGrade" value={data.finalGrade} onChange={handleChange} className="border p-2 rounded" required>
+        <select name="finalGrade" value={data.finalGrade} onChange={handleChange} className="border p-2 rounded dark:bg-slate-900/95 dark:text-white dark:border-slate-700" required>
           <option value="">Final Grade</option>
           {gradeOptions.map((g) => <option key={g}>{g}</option>)}
         </select>
@@ -119,10 +119,10 @@ const GradeForm = () => {
       <select
         name="month"
         onChange={handleFilterChange}
-        className="border p-2 rounded"
+        className="border p-2 rounded dark:bg-slate-900/95 dark:text-white dark:border-slate-700"
       >
         <option value="All">All Months</option>
-        {[
+        {[ 
           ...new Set(
             grades.map((g) =>
               new Date(g.date).toLocaleString("default", { month: "long" })
@@ -139,7 +139,7 @@ const GradeForm = () => {
         name="finalGrade"
         value={filters.finalGrade}
         onChange={handleFilterChange}
-        className="border p-2 rounded"
+        className="border p-2 rounded dark:bg-slate-900/95 dark:text-white dark:border-slate-700"
       >
         <option value="All">All Grades</option>
         {gradeOptions.map((g) => (
@@ -153,7 +153,7 @@ const GradeForm = () => {
         name="sortMarks"
         value={filters.sortMarks || ""}
         onChange={handleFilterChange}
-        className="border p-2 rounded"
+        className="border p-2 rounded dark:bg-slate-900/95 dark:text-white dark:border-slate-700"
       >
         <option value="">Sort by Marks</option>
         <option value="asc">Low to High</option>
@@ -161,9 +161,9 @@ const GradeForm = () => {
       </select>
       </div>
 
-      <div className="overflow-auto rounded shadow">
-        <table className="w-full table-auto text-sm border border-gray-300">
-          <thead className="bg-gray-100">
+      <div className="overflow-auto rounded shadow dark:bg-slate-900/95">
+        <table className="w-full table-auto text-sm border border-gray-300 dark:border-slate-700 dark:text-white">
+          <thead className="bg-gray-100 dark:bg-slate-800 dark:text-white">
             <tr>
               <th className="border px-2 py-1">Semester</th>
               <th className="border px-2 py-1">Date</th>
@@ -176,7 +176,7 @@ const GradeForm = () => {
           </thead>
           <tbody>
             {filteredGrades.map((grade, index) => (
-              <tr key={index} className="text-center">
+              <tr key={index} className="text-center dark:bg-slate-900/95 dark:text-white">
                 <td className="border px-2 py-1">{grade.semester}</td>
                 <td className="border px-2 py-1">{grade.date}</td>
                 <td className="border px-2 py-1">{grade.courseName}</td>

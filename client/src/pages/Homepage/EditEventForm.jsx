@@ -24,7 +24,7 @@ const categoryColors = {
   Other: "from-gray-500 to-gray-600",
 };
 
-export default function EditEventForm({ event, onSave, onCancel }) {
+export default function EditEventForm({ event, onSave, onCancel, darkMode }) {
   const formatDateFromEvent = (dateStr) => {
     if (!dateStr) return "";
     const date = new Date(dateStr);
@@ -91,10 +91,13 @@ export default function EditEventForm({ event, onSave, onCancel }) {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+        <h2
+          className="text-2xl font-bold mb-2"
+          style={{ color: darkMode ? '#fff' : '#000' }}
+        >
           Edit Event
         </h2>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className={darkMode ? "text-gray-400" : "text-gray-600"}>
           Update event details
         </p>
       </div>
@@ -107,7 +110,7 @@ export default function EditEventForm({ event, onSave, onCancel }) {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+          <label className={`flex items-center space-x-2 text-sm font-semibold mb-3`} style={{ color: darkMode ? '#fff' : '#000' }}>
             <FiType className="w-4 h-4" />
             <span>Event Title</span>
           </label>
@@ -115,7 +118,8 @@ export default function EditEventForm({ event, onSave, onCancel }) {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
+            className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
+            style={{ color: darkMode ? '#fff' : '#000' }}
             placeholder="Enter event title"
             required
             maxLength={100}
@@ -123,14 +127,15 @@ export default function EditEventForm({ event, onSave, onCancel }) {
         </div>
 
         <div>
-          <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+          <label className={`flex items-center space-x-2 text-sm font-semibold mb-3`} style={{ color: darkMode ? '#fff' : '#000' }}>
             <FiAlignLeft className="w-4 h-4" />
             <span>Description</span>
           </label>
           <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 resize-none"
+            className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 resize-none"
+            style={{ color: darkMode ? '#fff' : '#000' }}
             placeholder="Add a description (optional)"
             rows={3}
             maxLength={500}
@@ -138,7 +143,7 @@ export default function EditEventForm({ event, onSave, onCancel }) {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+          <label className={`block text-sm font-semibold mb-3`} style={{ color: darkMode ? '#fff' : '#000' }}>
             Category
           </label>
           <div className="grid grid-cols-2 gap-3">
@@ -150,8 +155,9 @@ export default function EditEventForm({ event, onSave, onCancel }) {
                 className={`p-3 rounded-2xl border-2 transition-all duration-200 ${
                   category === cat
                     ? `bg-gradient-to-r ${categoryColors[cat]} text-white border-transparent shadow-lg`
-                    : 'border-gray-200 dark:border-slate-600 text-gray-700 dark:text-gray-300 hover:border-gray-300 dark:hover:border-slate-500'
+                    : 'border-gray-200 dark:border-slate-600 hover:border-gray-300 dark:hover:border-slate-500'
                 }`}
+                style={{ color: darkMode ? '#fff' : '#000' }}
               >
                 <span className="text-sm font-medium">{cat}</span>
               </button>
@@ -160,7 +166,7 @@ export default function EditEventForm({ event, onSave, onCancel }) {
         </div>
 
         <div>
-          <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+          <label className={`flex items-center space-x-2 text-sm font-semibold mb-3`} style={{ color: darkMode ? '#fff' : '#000' }}>
             <FiCalendar className="w-4 h-4" />
             <span>Date</span>
           </label>
@@ -168,14 +174,15 @@ export default function EditEventForm({ event, onSave, onCancel }) {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
+            className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
+            style={{ color: darkMode ? '#fff' : '#000' }}
             required
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            <label className={`flex items-center space-x-2 text-sm font-semibold mb-3`} style={{ color: darkMode ? '#fff' : '#000' }}>
               <FiClock className="w-4 h-4" />
               <span>Start Time</span>
             </label>
@@ -183,12 +190,13 @@ export default function EditEventForm({ event, onSave, onCancel }) {
               type="time"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
-              className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
+              className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
+              style={{ color: darkMode ? '#fff' : '#000' }}
               required
             />
           </div>
           <div>
-            <label className="flex items-center space-x-2 text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+            <label className={`flex items-center space-x-2 text-sm font-semibold mb-3`} style={{ color: darkMode ? '#fff' : '#000' }}>
               <FiClock className="w-4 h-4" />
               <span>End Time</span>
             </label>
@@ -196,7 +204,8 @@ export default function EditEventForm({ event, onSave, onCancel }) {
               type="time"
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
-              className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
+              className="w-full px-4 py-3 bg-white/50 dark:bg-slate-700/50 border border-gray-200 dark:border-slate-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
+              style={{ color: darkMode ? '#fff' : '#000' }}
               required
             />
           </div>
@@ -206,7 +215,8 @@ export default function EditEventForm({ event, onSave, onCancel }) {
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 px-6 py-3 border border-gray-200 dark:border-slate-600 text-gray-700 dark:text-gray-300 font-semibold rounded-2xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-200"
+            className={`flex-1 px-6 py-3 border border-gray-200 dark:border-slate-600 font-semibold rounded-2xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-all duration-200`}
+            style={{ color: darkMode ? '#fff' : '#000' }}
           >
             Cancel
           </button>
