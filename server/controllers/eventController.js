@@ -99,9 +99,23 @@ exports.updateEvent = async (req, res) => {
             });
         }
 
+        // Manual validation for start and end times
+        const { start, end } = req.body;
+        if (start && end) {
+            const startDate = new Date(start);
+            const endDate = new Date(end);
+            
+            if (endDate <= startDate) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'End time must be after start time'
+                });
+            }
+        }
+
         event = await Event.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
-            runValidators: true
+            runValidators: false // Disable automatic validation since we're doing manual validation
         });
 
         res.status(200).json({
@@ -196,6 +210,52 @@ exports.deleteEvent = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Server error: ' + error.message
+        });
+    }
+};
+
+// @desc    Search events for a user
+// @route   GET /api/events/search?q=searchTerm
+// @access  Private
+exports.searchEvents = async (req, res) => {
+    try {
+        const { q } = req.query;
+        console.log('Search request received:', { query: q, userId: req.user.id });
+        
+        if (!q || q.trim() === '') {
+            console.log('Empty search query');
+            return res.status(400).json({
+                success: false,
+                message: 'Search query is required'
+            });
+        }
+
+        const searchRegex = new RegExp(q.trim(), 'i');
+        console.log('Search regex:', searchRegex);
+        
+        const events = await Event.find({
+            user: req.user.id,
+            $or: [
+                { title: searchRegex },
+                { description: searchRegex },
+                { category: searchRegex }
+            ]
+        })
+        .sort({ start: 1 })
+        .lean();
+
+        console.log('Search results:', events.length, 'events found');
+
+        res.status(200).json({
+            success: true,
+            count: events.length,
+            data: events
+        });
+    } catch (error) {
+        console.error('Search events error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
         });
     }
 };

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import EventCard from "./EventCard";
 import { FiPlus, FiX, FiEdit2, FiTrash2, FiClock, FiCalendar } from "react-icons/fi";
 import AddEventModal from "./AddEventModal";
@@ -17,9 +18,35 @@ function formatTime(date) {
 }
 
 const MainTimeLine = ({ darkMode, events, setEvents }) => {
+  const location = useLocation();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [editMode, setEditMode] = useState(false);
+  const [highlightedEventId, setHighlightedEventId] = useState(null);
+
+  // Handle navigation state for highlighting events
+  useEffect(() => {
+    if (location.state?.highlightEvent) {
+      setHighlightedEventId(location.state.highlightEvent);
+      // Clear the state after using it
+      window.history.replaceState({}, document.title);
+      
+      // Auto-clear highlight after 3 seconds
+      setTimeout(() => {
+        setHighlightedEventId(null);
+      }, 3000);
+    }
+    
+    if (location.state?.editEvent) {
+      const eventToEdit = events.find(ev => (ev._id || ev.id) === location.state.editEvent);
+      if (eventToEdit) {
+        setSelectedEvent(eventToEdit);
+        setEditMode(true);
+      }
+      // Clear the state after using it
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, events]);
 
   // Add event handler
   const handleAddEvent = (newEvent) => {
@@ -169,8 +196,12 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
                         <div 
                           className={`relative p-6 rounded-2xl border transition-all duration-200 cursor-pointer transform hover:scale-[1.02] hover:shadow-xl ${
                             darkMode 
-                              ? "bg-slate-700/30 border-slate-600/30 hover:bg-slate-700/50" 
-                              : "bg-white/80 border-gray-200/50 hover:bg-white"
+                              ? highlightedEventId === (event._id || event.id)
+                                ? "bg-blue-600/20 border-blue-500/50 hover:bg-blue-600/30"
+                                : "bg-slate-700/30 border-slate-600/30 hover:bg-slate-700/50"
+                              : highlightedEventId === (event._id || event.id)
+                                ? "bg-blue-100 border-blue-300 hover:bg-blue-200"
+                                : "bg-white/80 border-gray-200/50 hover:bg-white"
                           }`}
                           onClick={() => { setSelectedEvent(event); setEditMode(false); }}
                         >
