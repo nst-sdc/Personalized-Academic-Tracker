@@ -52,10 +52,16 @@ export default function EditEventForm({ event, onSave, onCancel, darkMode }) {
     setError("");
     
     try {
-      if (startTime && endTime && startTime >= endTime) {
-        setError("End time must be after start time");
-        setLoading(false);
-        return;
+      // Proper time validation by creating Date objects
+      if (startTime && endTime && date) {
+        const startDateTime = new Date(`${date}T${startTime}:00`);
+        const endDateTime = new Date(`${date}T${endTime}:00`);
+        
+        if (startDateTime >= endDateTime) {
+          setError("End time must be after start time");
+          setLoading(false);
+          return;
+        }
       }
 
       const start = date && startTime ? new Date(`${date}T${startTime}:00`) : null;

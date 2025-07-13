@@ -17,20 +17,22 @@ function HomePageLayout({ darkMode, setDarkMode }) {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-        try {
-            const response = await api.get('/events');
-            setEvents(response.data.data);
-        } catch (error) {
-            console.error('Error fetching events:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+  // Add refreshEvents function
+  const refreshEvents = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get('/events');
+      setEvents(response.data.data);
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchEvents();
-}, []);
+  useEffect(() => {
+    refreshEvents();
+  }, []);
 
   const showDateCol =
     (location.pathname === "/" || location.pathname === "/calendar");
@@ -42,7 +44,7 @@ function HomePageLayout({ darkMode, setDarkMode }) {
       <Sidebar darkMode={darkMode} activeItem={activeItem} onNavClick={setActiveItem} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <TopNavbar darkMode={darkMode} setDarkMode={setDarkMode} />
+        <TopNavbar darkMode={darkMode} setDarkMode={setDarkMode} events={events} refreshEvents={refreshEvents} />
 
         <main className="flex flex-row w-full min-h-full">
           {/* Left date column (optional) */}
