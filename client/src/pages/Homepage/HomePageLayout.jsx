@@ -13,6 +13,8 @@ import api from "../../utils/api";
 function HomePageLayout({ darkMode, setDarkMode }) {
   const location = useLocation();
   const [activeItem, setActiveItem] = useState("home");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  
   // Shared events state
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,12 +40,28 @@ function HomePageLayout({ darkMode, setDarkMode }) {
     (location.pathname === "/" || location.pathname === "/calendar");
 
   const bgClass = darkMode ? "bg-black text-white" : "bg-white text-black";
+  const isHomepage = location.pathname === "/";
+
+  // Calculate sidebar width for homepage margin
+  const sidebarWidth = sidebarOpen ? "118px" : "70px";
 
   return (
     <div className={`flex min-h-screen w-full transition-colors duration-300 ${bgClass}`}>
-      <Sidebar darkMode={darkMode} activeItem={activeItem} onNavClick={setActiveItem} />
+      {/* Sidebar */}
+      <Sidebar 
+        darkMode={darkMode} 
+        activeItem={activeItem} 
+        onNavClick={setActiveItem}
+        open={sidebarOpen}
+        setOpen={setSidebarOpen}
+      />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      {/* Main content container - adjusted for fixed sidebar on homepage */}
+      <div 
+        className={`flex-1 flex flex-col overflow-hidden
+          ${isHomepage ? "transition-all duration-500 ease-in-out" : ""}
+          ${isHomepage ? (sidebarOpen ? "ml-[118px]" : "ml-[70px]") : ""}`}
+      >
         <TopNavbar darkMode={darkMode} setDarkMode={setDarkMode} events={events} refreshEvents={refreshEvents} />
 
         <main className="flex flex-row w-full min-h-full">

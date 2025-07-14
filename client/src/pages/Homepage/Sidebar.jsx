@@ -18,23 +18,28 @@ const navItems = [
   { key: "settings", icon: <AiOutlineSetting size={24} />, alt: "Settings", path: "/settings" },
 ];
 
-const Sidebar = ({ darkMode }) => {
+const Sidebar = ({ darkMode, open, setOpen }) => {
   const location = useLocation();
-  const [open, setOpen] = useState(true);
+  // Use props if provided, otherwise use internal state
+  const [internalOpen, setInternalOpen] = useState(true);
+  const isOpen = open !== undefined ? open : internalOpen;
+  const toggleOpen = setOpen || setInternalOpen;
   const bgColor = darkMode ? "bg-[#0D0D0D]" : "bg-white";
+  const isHomepage = location.pathname === "/";
 
   return (
     <aside
-      className={`h-screen flex justify-center overflow-hidden transition-all duration-500 ease-in-out border-r shadow-lg
+      className={`h-screen flex justify-center overflow-hidden transition-all duration-500 ease-in-out border-r shadow-lg z-50
         ${bgColor} ${darkMode ? "border-gray-800" : "border-gray-100"}
-        ${open ? "w-[118px]" : "w-[70px]"}`}
+        ${isOpen ? "w-[118px]" : "w-[70px]"}
+        ${isHomepage ? "fixed left-0 top-0" : "relative"}`}
     >
-      <div className={`flex flex-col items-center justify-between h-full py-7 w-full transition-all duration-500 ${open ? "" : "py-0"}`}>
+      <div className={`flex flex-col items-center justify-between h-full py-7 w-full transition-all duration-500 ${isOpen ? "" : "py-0"}`}>
         {/* Logo (clickable) */}
         <div
           className="relative group cursor-pointer flex flex-col items-center justify-center"
-          style={{ minHeight: open ? 0 : "100vh" }}
-          onClick={() => setOpen((prev) => !prev)}
+          style={{ minHeight: isOpen ? 0 : "100vh" }}
+          onClick={() => toggleOpen((prev) => !prev)}
           title="Toggle sidebar"
         >
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl blur opacity-20 group-hover:opacity-40 transition-opacity duration-300"></div>
@@ -44,7 +49,7 @@ const Sidebar = ({ darkMode }) => {
         </div>
 
         {/* Navigation and Logout (hide if closed) */}
-        {open && (
+        {isOpen && (
           <>
             {/* Navigation */}
             <nav className="flex flex-col items-center gap-6 mt-16">
