@@ -18,7 +18,7 @@ const initialGrades = [
 
 const subjects = ["Math", "Physics", "English", "Chemistry", "Biology", "History", "Geography"];
 
-export default function Tracker() {
+export default function Tracker({ darkMode = false }) {
   const [grades, setGrades] = useState(initialGrades);
   const [form, setForm] = useState({ subject: "", grade: "", deadline: "" });
   const [open, setOpen] = useState(false);
@@ -42,12 +42,10 @@ export default function Tracker() {
     setOpen(false);
   };
 
-  // Simple stats
   const avg = grades.length ? (grades.reduce((a, b) => a + b.grade, 0) / grades.length).toFixed(1) : 0;
   const best = grades.length ? Math.max(...grades.map(g => g.grade)) : 0;
   const worst = grades.length ? Math.min(...grades.map(g => g.grade)) : 0;
 
-  // Pie chart data
   const chartData = {
     labels: grades.map(g => g.subject),
     datasets: [
@@ -69,15 +67,17 @@ export default function Tracker() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto py-10 px-2 md:px-0">
+    <div className={`${darkMode ? "bg-slate-900 text-white" : "bg-white text-black"} min-h-screen w-full`}>
+      <div className="max-w-5xl mx-auto py-10 px-2 md:px-0">
       <h1 className="text-3xl font-bold mb-6">Tracker</h1>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader>
             <CardTitle>Average Grade</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-blue-600">{avg}</div>
+            <div className="text-4xl font-bold text-blue-600 dark:text-blue-400">{avg}</div>
           </CardContent>
         </Card>
         <Card>
@@ -85,7 +85,7 @@ export default function Tracker() {
             <CardTitle>Best Grade</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-green-600">{best}</div>
+            <div className="text-4xl font-bold text-green-600 dark:text-green-400">{best}</div>
           </CardContent>
         </Card>
         <Card>
@@ -93,10 +93,11 @@ export default function Tracker() {
             <CardTitle>Lowest Grade</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-4xl font-bold text-red-600">{worst}</div>
+            <div className="text-4xl font-bold text-red-600 dark:text-red-400">{worst}</div>
           </CardContent>
         </Card>
       </div>
+
       <Card className="mb-8">
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Grades & Assignments</CardTitle>
@@ -166,6 +167,7 @@ export default function Tracker() {
           </Table>
         </CardContent>
       </Card>
+
       <Card>
         <CardHeader>
           <CardTitle>Grade Distribution</CardTitle>
@@ -176,6 +178,7 @@ export default function Tracker() {
           </div>
         </CardContent>
       </Card>
+    </div>
     </div>
   );
 }

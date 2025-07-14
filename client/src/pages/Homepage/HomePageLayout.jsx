@@ -59,8 +59,8 @@ function HomePageLayout({ darkMode, setDarkMode }) {
             <Routes>
               <Route path="/" element={<MainTimeline darkMode={darkMode} events={events} setEvents={setEvents} />} />
               <Route path="/calendar" element={<Calendar darkMode={darkMode} />} />
-              <Route path="/work" element={<WorkPage />} />
-              <Route path="/tracker" element={<Tracker />} />
+              <Route path="/work" element={<WorkPage darkMode={darkMode} />} />
+              <Route path="/tracker" element={<Tracker darkMode={darkMode} />} />
               <Route path="/settings" element={<Settings darkMode={darkMode} />} />
               <Route
                 path="*"
