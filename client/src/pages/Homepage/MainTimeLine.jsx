@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import EventCard from "./EventCard";
-import { FiPlus, FiX, FiEdit2, FiTrash2, FiClock, FiCalendar } from "react-icons/fi";
+import { FiPlus, FiX, FiEdit2, FiTrash2, FiClock, FiCalendar, FiMapPin, FiUser } from "react-icons/fi";
 import AddEventModal from "./AddEventModal";
 import EditEventForm from "./EditEventForm";
 import api from "../../utils/api";
@@ -14,7 +14,24 @@ function isToday(date) {
 }
 
 function formatTime(date) {
-  return new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return new Date(date).toLocaleTimeString('en-US', { 
+    hour: '2-digit', 
+    minute: '2-digit',
+    hour12: false 
+  });
+}
+
+function formatDuration(start, end) {
+  const startTime = new Date(start);
+  const endTime = new Date(end);
+  const diffMs = endTime - startTime;
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+  const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+  
+  if (diffHours > 0) {
+    return diffMinutes > 0 ? `${diffHours}h ${diffMinutes}m` : `${diffHours}h`;
+  }
+  return `${diffMinutes}m`;
 }
 
 const MainTimeLine = ({ darkMode, events, setEvents }) => {
@@ -23,15 +40,22 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [highlightedEventId, setHighlightedEventId] = useState(null);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update current time every minute
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Handle navigation state for highlighting events
   useEffect(() => {
     if (location.state?.highlightEvent) {
       setHighlightedEventId(location.state.highlightEvent);
-      // Clear the state after using it
       window.history.replaceState({}, document.title);
       
-      // Auto-clear highlight after 3 seconds
       setTimeout(() => {
         setHighlightedEventId(null);
       }, 3000);
@@ -43,7 +67,6 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
         setSelectedEvent(eventToEdit);
         setEditMode(true);
       }
-      // Clear the state after using it
       window.history.replaceState({}, document.title);
     }
   }, [location.state, events]);
@@ -92,173 +115,386 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
     .filter(ev => ev.start && isToday(ev.start))
     .sort((a, b) => new Date(a.start) - new Date(b.start));
 
+  // Generate time slots and create adaptive layout
+  const generateAdaptiveTimeSlots = () => {
+    const slots = [];
+    const baseHeight = 80; // Base height for empty slots
+    const eventHeight = 120; // Height for slots with events
+    
+    for (let hour = 9; hour <= 20; hour++) {
+      const timeSlot = `${hour.toString().padStart(2, '0')}:00`;
+      const hasEvent = todayEvents.some(event => {
+        const eventHour = new Date(event.start).getHours();
+        return eventHour === hour;
+      });
+      
+      slots.push({
+        time: timeSlot,
+        height: hasEvent ? eventHeight : baseHeight,
+        hasEvent
+      });
+    }
+    
+    return slots;
+  };
+
+  // Get current time position
+  const getCurrentTimePosition = () => {
+    const now = currentTime;
+    const hours = now.getHours();
+    const minutes = now.getMinutes();
+    
+    if (hours < 9 || hours > 20) return null;
+    
+    const timeSlots = generateAdaptiveTimeSlots();
+    let totalHeight = 0;
+    let currentSlotHeight = 0;
+    
+    for (let i = 0; i < timeSlots.length; i++) {
+      const slotHour = parseInt(timeSlots[i].time.split(':')[0]);
+      
+      if (slotHour === hours) {
+        currentSlotHeight = timeSlots[i].height;
+        const minuteProgress = minutes / 60;
+        totalHeight += currentSlotHeight * minuteProgress;
+        break;
+      } else if (slotHour < hours) {
+        totalHeight += timeSlots[i].height;
+      }
+    }
+    
+    return totalHeight;
+  };
+
+  // Get event position for a specific time slot
+  const getEventForTimeSlot = (timeSlot) => {
+    const hour = parseInt(timeSlot.split(':')[0]);
+    return todayEvents.find(event => {
+      const eventHour = new Date(event.start).getHours();
+      return eventHour === hour;
+    });
+  };
+
+  // Get next event
+  const getNextEvent = () => {
+    const now = currentTime;
+    const currentTimeInMinutes = now.getHours() * 60 + now.getMinutes();
+    
+    for (const event of todayEvents) {
+      const eventStart = new Date(event.start);
+      const eventTimeInMinutes = eventStart.getHours() * 60 + eventStart.getMinutes();
+      
+      if (eventTimeInMinutes > currentTimeInMinutes) {
+        const timeDiff = eventTimeInMinutes - currentTimeInMinutes;
+        const hours = Math.floor(timeDiff / 60);
+        const minutes = timeDiff % 60;
+        
+        return {
+          event,
+          timeUntil: hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`
+        };
+      }
+    }
+    return null;
+  };
+
+  const timeSlots = generateAdaptiveTimeSlots();
+  const currentTimePosition = getCurrentTimePosition();
+  const nextEventInfo = getNextEvent();
+
   const currentDate = new Date();
-  const formattedDate = currentDate.toLocaleDateString('en-US', { 
-    weekday: 'long', 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
-  });
+  const dayNumber = currentDate.getDate();
+  const dayName = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
+
+  // Event color schemes
+  const getEventColors = (category) => {
+    const colorSchemes = {
+      work: { 
+        bg: darkMode ? 'bg-blue-900/20' : 'bg-blue-50', 
+        border: darkMode ? 'border-blue-500/30' : 'border-blue-300', 
+        text: darkMode ? 'text-blue-200' : 'text-blue-900',
+        accent: 'bg-blue-500'
+      },
+      personal: { 
+        bg: darkMode ? 'bg-green-900/20' : 'bg-green-50', 
+        border: darkMode ? 'border-green-500/30' : 'border-green-300', 
+        text: darkMode ? 'text-green-200' : 'text-green-900',
+        accent: 'bg-green-500'
+      },
+      study: { 
+        bg: darkMode ? 'bg-purple-900/20' : 'bg-purple-50', 
+        border: darkMode ? 'border-purple-500/30' : 'border-purple-300', 
+        text: darkMode ? 'text-purple-200' : 'text-purple-900',
+        accent: 'bg-purple-500'
+      },
+      meeting: { 
+        bg: darkMode ? 'bg-orange-900/20' : 'bg-orange-50', 
+        border: darkMode ? 'border-orange-500/30' : 'border-orange-300', 
+        text: darkMode ? 'text-orange-200' : 'text-orange-900',
+        accent: 'bg-orange-500'
+      },
+      default: { 
+        bg: darkMode ? 'bg-gray-900/20' : 'bg-gray-50', 
+        border: darkMode ? 'border-gray-500/30' : 'border-gray-300', 
+        text: darkMode ? 'text-gray-200' : 'text-gray-900',
+        accent: 'bg-gray-500'
+      }
+    };
+
+    return colorSchemes[category?.toLowerCase()] || colorSchemes.default;
+  };
 
   return (
-    <div className={`flex-1 min-h-screen transition-all duration-300 ${
+    <div className={`flex-1 min-h-screen transition-all duration-500 ${
       darkMode 
-        ? "bg-gradient-to-br from-slate-900 to-slate-800" 
-        : "bg-gradient-to-br from-gray-50 to-white"
+        ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900" 
+        : "bg-gradient-to-br from-gray-50 via-white to-gray-100"
     }`}>
-      <div className="max-w-4xl mx-auto px-6 py-8">
+      <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className={`text-3xl font-bold mb-2 ${
-                darkMode ? "text-white" : "text-gray-900"
-              }`}>
-                Today's Timeline
-              </h1>
-              <div className="flex items-center space-x-2">
-                <FiCalendar className={`w-5 h-5 ${
-                  darkMode ? "text-gray-400" : "text-gray-600"
-                }`} />
-                <p className={`text-lg ${
-                  darkMode ? "text-gray-400" : "text-gray-600"
+            <div className="space-y-2">
+              <div className="flex items-baseline space-x-3">
+                <span className={`text-4xl font-light ${
+                  darkMode ? "text-gray-400" : "text-gray-500"
                 }`}>
-                  {formattedDate}
-                </p>
+                  {dayNumber}th,
+                </span>
+                <h1 className={`text-5xl font-bold ${
+                  darkMode ? "text-white" : "text-gray-900"
+                }`}>
+                  {dayName}
+                </h1>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2">
+                  <FiCalendar className={`w-5 h-5 ${
+                    darkMode ? "text-gray-400" : "text-gray-600"
+                  }`} />
+                  <span className={`text-lg ${
+                    darkMode ? "text-gray-400" : "text-gray-600"
+                  }`}>
+                    {currentDate.toLocaleDateString('en-US', { 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </span>
+                </div>
+                {nextEventInfo && (
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-red-500 font-medium">
+                      Next event in {nextEventInfo.timeUntil}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
             
             <button
               onClick={() => setModalOpen(true)}
-              className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              className="group relative overflow-hidden px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-2xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
             >
-              <FiPlus className="w-5 h-5" />
-              <span>Add Event</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="relative flex items-center space-x-3">
+                <FiPlus className="w-5 h-5" />
+                <span>Add Event</span>
+              </div>
             </button>
           </div>
         </div>
 
-        {/* Timeline */}
+        {/* Timeline Container */}
         <div className={`relative backdrop-blur-xl rounded-3xl border shadow-2xl overflow-hidden ${
           darkMode 
-            ? "bg-slate-800/50 border-slate-700/50" 
-            : "bg-white/70 border-gray-200/20"
+            ? "bg-gray-800/50 border-gray-700/50" 
+            : "bg-white/80 border-gray-200/50"
         }`}>
-          {/* Timeline Line */}
-          <div className="absolute left-8 top-8 bottom-8 w-px bg-gradient-to-b from-blue-500 to-purple-500 opacity-30" />
-          
           <div className="p-8">
             {todayEvents.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20">
-                <div className={`w-16 h-16 rounded-full border-2 border-dashed flex items-center justify-center mb-6 ${
+                <div className={`w-20 h-20 rounded-full border-2 border-dashed flex items-center justify-center mb-6 ${
                   darkMode 
                     ? "border-gray-600 text-gray-500" 
                     : "border-gray-300 text-gray-400"
                 }`}>
-                  <FiClock className="w-8 h-8" />
+                  <FiClock className="w-10 h-10" />
                 </div>
-                <h3 className={`text-xl font-semibold mb-2 ${
+                <h3 className={`text-2xl font-semibold mb-3 ${
                   darkMode ? "text-gray-300" : "text-gray-700"
                 }`}>
                   No Events Today
                 </h3>
-                <p className={`text-center max-w-md ${
+                <p className={`text-center max-w-md text-lg ${
                   darkMode ? "text-gray-500" : "text-gray-500"
                 }`}>
-                  Your schedule is clear. Take some time to plan your day or add new events.
+                  Your schedule is clear. Perfect time to plan your day or add new events.
                 </p>
               </div>
             ) : (
-              <div className="space-y-8">
-                {todayEvents.map((event, idx) => {
-                  const start = new Date(event.start);
-                  const end = new Date(event.end);
-                  const startStr = formatTime(start);
-                  const endStr = formatTime(end);
-                  const eventKey = event.id || event._id || `event-${idx}`;
-                  
-                  return (
-                    <div key={eventKey} className="relative flex items-start space-x-6 group">
-                      {/* Timeline Node */}
-                      <div className="relative flex-shrink-0">
-                        <div className={`w-4 h-4 rounded-full border-2 shadow-lg ${
-                          darkMode 
-                            ? "bg-slate-800 border-blue-500" 
-                            : "bg-white border-blue-500"
-                        }`} />
-                        {idx !== todayEvents.length - 1 && (
-                          <div className="absolute top-4 left-1/2 -translate-x-1/2 w-px h-16 bg-gradient-to-b from-blue-500/30 to-transparent" />
-                        )}
-                      </div>
-
-                      {/* Event Card */}
-                      <div className="flex-1 min-w-0">
-                        <div 
-                          className={`relative p-6 rounded-2xl border transition-all duration-200 cursor-pointer transform hover:scale-[1.02] hover:shadow-xl ${
-                            darkMode 
-                              ? highlightedEventId === (event._id || event.id)
-                                ? "bg-blue-600/20 border-blue-500/50 hover:bg-blue-600/30"
-                                : "bg-slate-700/30 border-slate-600/30 hover:bg-slate-700/50"
-                              : highlightedEventId === (event._id || event.id)
-                                ? "bg-blue-100 border-blue-300 hover:bg-blue-200"
-                                : "bg-white/80 border-gray-200/50 hover:bg-white"
-                          }`}
-                          onClick={() => { setSelectedEvent(event); setEditMode(false); }}
+              <div className="relative">
+                {/* Timeline Grid */}
+                <div className="flex">
+                  {/* Time Labels */}
+                  <div className="w-20 flex-shrink-0">
+                    <div className="space-y-0">
+                      {timeSlots.map((slot, index) => (
+                        <div
+                          key={slot.time}
+                          className="flex items-start justify-end pr-4"
+                          style={{ height: `${slot.height}px` }}
                         >
-                          {/* Google Calendar Button */}
-                          <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                            <AddToGoogleCalendarButton event={event} small />
-                          </div>
+                          <span className={`text-sm font-medium ${
+                            darkMode ? "text-gray-400" : "text-gray-600"
+                          }`}>
+                            {slot.time}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
 
-                          <div className="mb-4">
-                            <h3 className={`text-lg font-semibold mb-2 ${
-                              darkMode ? "text-white" : "text-gray-900"
-                            }`}>
-                              {event.title}
-                            </h3>
-                            {event.description && (
-                              <p className={`text-sm mb-3 ${
-                                darkMode ? "text-gray-300" : "text-gray-600"
-                              }`}>
-                                {event.description}
-                              </p>
-                            )}
-                            <div className="flex items-center space-x-4">
-                              <div className="flex items-center space-x-1">
-                                <FiClock className={`w-4 h-4 ${
-                                  darkMode ? "text-gray-400" : "text-gray-500"
-                                }`} />
-                                <span className={`text-sm font-medium ${
-                                  darkMode ? "text-gray-300" : "text-gray-700"
-                                }`}>
-                                  {startStr} - {endStr}
-                                </span>
+                  {/* Timeline Content */}
+                  <div className="flex-1 relative ml-6">
+                    <div className="relative">
+                      {/* Grid Lines and Events */}
+                      {timeSlots.map((slot, index) => {
+                        const event = getEventForTimeSlot(slot.time);
+                        
+                        return (
+                          <div
+                            key={slot.time}
+                            className="relative border-t border-gray-200/30 dark:border-gray-700/30"
+                            style={{ height: `${slot.height}px` }}
+                          >
+                            {event && (
+                              <div className="absolute inset-x-4 top-2 bottom-2">
+                                <div
+                                  className={`h-full rounded-xl border-2 border-dashed p-4 transition-all duration-300 cursor-pointer hover:shadow-lg group ${
+                                    (() => {
+                                      const colors = getEventColors(event.category);
+                                      const isHighlighted = highlightedEventId === (event._id || event.id);
+                                      return isHighlighted 
+                                        ? `${colors.bg} ${colors.border} ring-2 ring-blue-400 ring-opacity-50` 
+                                        : `${colors.bg} ${colors.border} hover:shadow-xl hover:scale-[1.02]`;
+                                    })()
+                                  }`}
+                                  onClick={() => { setSelectedEvent(event); setEditMode(false); }}
+                                >
+                                  <div className="h-full flex flex-col justify-between">
+                                    <div className="flex-1 min-h-0">
+                                      <div className="flex items-start justify-between mb-2">
+                                        <div className="flex-1 min-w-0">
+                                          <h4 className={`font-semibold text-lg leading-tight truncate ${
+                                            getEventColors(event.category).text
+                                          }`}>
+                                            {event.title}
+                                          </h4>
+                                          {event.description && (
+                                            <p className={`text-sm mt-1 opacity-75 line-clamp-2 ${
+                                              getEventColors(event.category).text
+                                            }`}>
+                                              {event.description}
+                                            </p>
+                                          )}
+                                        </div>
+                                        <div className="flex items-center space-x-2 ml-3 flex-shrink-0">
+                                          <span className={`text-xs font-medium px-2 py-1 rounded-md ${
+                                            darkMode 
+                                              ? "bg-gray-700 text-gray-300" 
+                                              : "bg-white text-gray-600"
+                                          }`}>
+                                            {formatDuration(event.start, event.end)}
+                                          </span>
+                                          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                            <AddToGoogleCalendarButton event={event} small />
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="flex items-center justify-between text-sm mt-2">
+                                      <div className="flex items-center space-x-4">
+                                        <span className={`flex items-center space-x-1 ${
+                                          getEventColors(event.category).text
+                                        } opacity-75`}>
+                                          <FiClock className="w-3 h-3 flex-shrink-0" />
+                                          <span className="truncate">
+                                            {formatTime(event.start)} - {formatTime(event.end)}
+                                          </span>
+                                        </span>
+                                        {event.location && (
+                                          <span className={`flex items-center space-x-1 ${
+                                            getEventColors(event.category).text
+                                          } opacity-75`}>
+                                            <FiMapPin className="w-3 h-3 flex-shrink-0" />
+                                            <span className="truncate">{event.location}</span>
+                                          </span>
+                                        )}
+                                      </div>
+                                      
+                                      {event.category && (
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ${
+                                          darkMode 
+                                            ? "bg-gray-700 text-gray-300" 
+                                            : "bg-white text-gray-600"
+                                        }`}>
+                                          {event.category}
+                                        </span>
+                                      )}
+                                    </div>
+
+                                    {/* Participants */}
+                                    {event.participants && event.participants.length > 0 && (
+                                      <div className="flex items-center space-x-2 mt-2">
+                                        <div className="flex -space-x-2">
+                                          {event.participants.slice(0, 3).map((participant, idx) => (
+                                            <div
+                                              key={idx}
+                                              className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 border-2 border-white flex items-center justify-center text-xs font-medium text-white shadow-sm"
+                                            >
+                                              {participant.charAt(0).toUpperCase()}
+                                            </div>
+                                          ))}
+                                          {event.participants.length > 3 && (
+                                            <div className={`w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-xs font-medium shadow-sm ${
+                                              darkMode 
+                                                ? "bg-gray-600 text-gray-300" 
+                                                : "bg-gray-200 text-gray-600"
+                                            }`}>
+                                              +{event.participants.length - 3}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
-                              {event.category && (
-                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                  darkMode 
-                                    ? "bg-blue-500/20 text-blue-400" 
-                                    : "bg-blue-100 text-blue-600"
-                                }`}>
-                                  {event.category}
-                                </span>
-                              )}
+                            )}
+                          </div>
+                        );
+                      })}
+
+                      {/* Current Time Indicator */}
+                      {currentTimePosition && (
+                        <div
+                          className="absolute left-0 right-0 z-20"
+                          style={{ top: `${currentTimePosition}px` }}
+                        >
+                          <div className="flex items-center">
+                            <div className="w-4 h-4 bg-blue-500 rounded-full border-4 border-white shadow-lg animate-pulse" />
+                            <div className="flex-1 h-0.5 bg-blue-500" />
+                            <div className="ml-3 bg-blue-500 text-white text-sm px-3 py-1 rounded-lg font-medium shadow-lg">
+                              {formatTime(currentTime)}
                             </div>
                           </div>
                         </div>
-                      </div>
-
-                      {/* Time Label */}
-                      <div className="flex-shrink-0 w-20 text-right">
-                        <span className={`text-sm font-medium ${
-                          darkMode ? "text-gray-400" : "text-gray-600"
-                        }`}>
-                          {startStr}
-                        </span>
-                      </div>
+                      )}
                     </div>
-                  );
-                })}
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -274,17 +510,17 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
         {/* Event Details/Edit Modal */}
         {selectedEvent && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-            <div className={`relative w-full max-w-md max-h-[90vh] overflow-y-auto backdrop-blur-xl rounded-3xl border shadow-2xl ${
+            <div className={`relative w-full max-w-lg max-h-[90vh] overflow-y-auto backdrop-blur-xl rounded-3xl border shadow-2xl ${
               darkMode 
-                ? "bg-slate-800/95 border-slate-700/50" 
+                ? "bg-gray-800/95 border-gray-700/50" 
                 : "bg-white/95 border-gray-200/50"
             }`}>
               <div className="p-8">
                 <button
                   onClick={() => { setSelectedEvent(null); setEditMode(false); }}
-                  className={`absolute top-4 right-4 p-2 rounded-full transition-all duration-200 ${
+                  className={`absolute top-6 right-6 p-2 rounded-full transition-all duration-200 ${
                     darkMode 
-                      ? "text-gray-400 hover:text-white hover:bg-slate-700" 
+                      ? "text-gray-400 hover:text-white hover:bg-gray-700" 
                       : "text-gray-500 hover:text-gray-700 hover:bg-gray-100"
                   }`}
                 >
@@ -293,36 +529,60 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
 
                 {!editMode ? (
                   <>
-                    <div className="mb-6">
-                      <h2 className={`text-2xl font-bold mb-2 ${
+                    <div className="mb-8">
+                      <h2 className={`text-3xl font-bold mb-4 ${
                         darkMode ? "text-white" : "text-gray-900"
                       }`}>
                         {selectedEvent.title}
                       </h2>
-                      <div className="flex items-center space-x-4">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                          darkMode 
-                            ? "bg-blue-500/20 text-blue-400" 
-                            : "bg-blue-100 text-blue-600"
-                        }`}>
-                          {selectedEvent.category}
-                        </span>
-                        <div className="flex items-center space-x-1">
+                      <div className="flex flex-wrap items-center gap-3 mb-4">
+                        {selectedEvent.category && (
+                          <span className={`px-4 py-2 rounded-full text-sm font-medium ${
+                            darkMode 
+                              ? "bg-blue-500/20 text-blue-400" 
+                              : "bg-blue-100 text-blue-600"
+                          }`}>
+                            {selectedEvent.category}
+                          </span>
+                        )}
+                        <div className="flex items-center space-x-2">
                           <FiClock className={`w-4 h-4 ${
+                            darkMode ? "text-gray-400" : "text-gray-500"
+                          }`} />
+                          <span className={`text-sm font-medium ${
+                            darkMode ? "text-gray-300" : "text-gray-600"
+                          }`}>
+                            {formatTime(selectedEvent.start)} - {formatTime(selectedEvent.end)}
+                          </span>
+                          <span className={`text-sm ${
+                            darkMode ? "text-gray-400" : "text-gray-500"
+                          }`}>
+                            ({formatDuration(selectedEvent.start, selectedEvent.end)})
+                          </span>
+                        </div>
+                      </div>
+                      {selectedEvent.location && (
+                        <div className="flex items-center space-x-2 mb-4">
+                          <FiMapPin className={`w-4 h-4 ${
                             darkMode ? "text-gray-400" : "text-gray-500"
                           }`} />
                           <span className={`text-sm ${
                             darkMode ? "text-gray-300" : "text-gray-600"
                           }`}>
-                            {formatTime(selectedEvent.start)} - {formatTime(selectedEvent.end)}
+                            {selectedEvent.location}
                           </span>
                         </div>
-                      </div>
+                      )}
                     </div>
 
                     {selectedEvent.description && (
-                      <div className="mb-6">
-                        <p className={`${
+                      <div className="mb-8">
+                        <h3 className={`text-lg font-semibold mb-3 ${
+                          darkMode ? "text-white" : "text-gray-900"
+                        }`}>
+                          Description
+                        </h3>
+                        <p className={`leading-relaxed ${
                           darkMode ? "text-gray-300" : "text-gray-700"
                         }`}>
                           {selectedEvent.description}
@@ -330,28 +590,45 @@ const MainTimeLine = ({ darkMode, events, setEvents }) => {
                       </div>
                     )}
 
-                    <div className="flex space-x-3">
+                    {selectedEvent.participants && selectedEvent.participants.length > 0 && (
+                      <div className="mb-8">
+                        <h3 className={`text-lg font-semibold mb-3 ${
+                          darkMode ? "text-white" : "text-gray-900"
+                        }`}>
+                          Participants
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedEvent.participants.map((participant, idx) => (
+                            <div
+                              key={idx}
+                              className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
+                                darkMode 
+                                  ? "bg-gray-700 text-gray-300" 
+                                  : "bg-gray-100 text-gray-700"
+                              }`}
+                            >
+                              <FiUser className="w-4 h-4" />
+                              <span className="text-sm">{participant}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex space-x-4">
                       <button
                         onClick={() => setEditMode(true)}
-                        className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-semibold transition-all duration-200 ${
-                          darkMode 
-                            ? "bg-blue-600 text-white hover:bg-blue-700" 
-                            : "bg-blue-600 text-white hover:bg-blue-700"
-                        }`}
+                        className="flex-1 flex items-center justify-center space-x-2 px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg hover:shadow-xl"
                       >
-                        <FiEdit2 className="w-4 h-4" />
-                        <span>Edit</span>
+                        <FiEdit2 className="w-5 h-5" />
+                        <span>Edit Event</span>
                       </button>
                       <button
                         onClick={() => handleDeleteEvent(selectedEvent)}
-                        className={`flex-1 flex items-center justify-center space-x-2 px-4 py-3 rounded-xl font-semibold transition-all duration-200 ${
-                          darkMode 
-                            ? "bg-red-600 text-white hover:bg-red-700" 
-                            : "bg-red-600 text-white hover:bg-red-700"
-                        }`}
+                        className="flex-1 flex items-center justify-center space-x-2 px-6 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white font-semibold rounded-xl hover:from-red-700 hover:to-red-800 transition-all duration-200 shadow-lg hover:shadow-xl"
                       >
-                        <FiTrash2 className="w-4 h-4" />
-                        <span>Delete</span>
+                        <FiTrash2 className="w-5 h-5" />
+                        <span>Delete Event</span>
                       </button>
                     </div>
                   </>
