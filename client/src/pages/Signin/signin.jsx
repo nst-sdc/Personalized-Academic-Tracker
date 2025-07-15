@@ -29,12 +29,14 @@ const Signin = ({ darkMode }) => {
     if (error) setError('');
   };
 
+  // Validate form
   const validateForm = () => {
     if (!formData.email || !formData.password) {
       setError('Please fill in all fields');
       return false;
     }
 
+    // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       setError('Please enter a valid email address');
@@ -43,6 +45,9 @@ const Signin = ({ darkMode }) => {
 
     return true;
   };
+
+  // Handle form submission
+  // Enhanced handleLogin function for Signin.jsx - Add this to handle unverified emails
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -67,12 +72,15 @@ const Signin = ({ darkMode }) => {
       const data = await response.json();
 
       if (response.ok && data.success) {
+        // Store token in localStorage or sessionStorage based on remember me
         const storage = rememberMe ? localStorage : sessionStorage;
         storage.setItem('authToken', data.token);
         storage.setItem('user', JSON.stringify(data.user));
 
+        // Store expiry information
         if (data.expiresIn) {
           const expiryTime = new Date();
+          // Parse expiry time (e.g., "7d" -> 7 days from now)
           if (data.expiresIn.includes('d')) {
             const days = parseInt(data.expiresIn.replace('d', ''));
             expiryTime.setDate(expiryTime.getDate() + days);
@@ -83,6 +91,7 @@ const Signin = ({ darkMode }) => {
           storage.setItem('tokenExpiry', expiryTime.toISOString());
         }
 
+        // Handle remember me preferences
         if (rememberMe) {
           localStorage.setItem('rememberMe', 'true');
           localStorage.setItem('userEmail', formData.email);
@@ -91,13 +100,17 @@ const Signin = ({ darkMode }) => {
           localStorage.removeItem('userEmail');
         }
 
+        // Show success message briefly before redirect
         console.log('Login successful:', data.message);
 
+        // Redirect to dashboard or home page
         navigate('/dashboard', { replace: true });
 
       } else {
+        // Handle specific error cases
         if (data.code === 'EMAIL_NOT_VERIFIED') {
           setError(`${data.message} Would you like us to resend the verification email?`);
+          // Optionally show a "Resend Email" button here
         } else {
           setError(data.message || 'Login failed. Please try again.');
         }
@@ -106,6 +119,7 @@ const Signin = ({ darkMode }) => {
     } catch (error) {
       console.error('Login error:', error);
 
+      // Handle different types of errors
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
         setError('Unable to connect to server. Please check your internet connection.');
       } else if (error.name === 'AbortError') {
@@ -118,26 +132,32 @@ const Signin = ({ darkMode }) => {
     }
   };
 
+  // Handle social login (placeholder functions)
   const handleGoogleLogin = () => {
     console.log('Google login clicked');
+    // TODO: Implement Google OAuth login
     setError('Google login is not available yet. Please use email/password login.');
   };
 
   const handleFacebookLogin = () => {
     console.log('Facebook login clicked');
+    // TODO: Implement Facebook OAuth login
     setError('Facebook login is not available yet. Please use email/password login.');
   };
 
   const handleAppleLogin = () => {
     console.log('Apple login clicked');
+    // TODO: Implement Apple OAuth login
     setError('Apple login is not available yet. Please use email/password login.');
   };
 
   const handleMobileLogin = () => {
     console.log('Mobile login clicked');
+    // TODO: Implement mobile/SMS login
     setError('Mobile login is not available yet. Please use email/password login.');
   };
 
+  // Toggle password visibility
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };

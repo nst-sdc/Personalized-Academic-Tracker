@@ -5,7 +5,6 @@ import TopNavbar from "./TopNavbar.jsx";
 import LeftDateColoumn from "./LeftDateColoumn.jsx";
 import MainTimeline from "./MainTimeLine.jsx";
 import Calendar from "../Calendar.jsx"; 
-import WorkPage from "../WorkPage.jsx";
 import Settings from "../Settings";
 import Tracker from "../Tracker/tracker.jsx";
 import api from "../../utils/api";
@@ -15,6 +14,7 @@ function HomePageLayout({ darkMode, setDarkMode }) {
   const [activeItem, setActiveItem] = useState("home");
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Fix undefined bug
 
   const refreshEvents = async () => {
     setLoading(true);
@@ -73,7 +73,6 @@ function HomePageLayout({ darkMode, setDarkMode }) {
             <Routes>
               <Route path="/" element={<MainTimeline darkMode={darkMode} events={events} setEvents={setEvents} />} />
               <Route path="/calendar" element={<Calendar darkMode={darkMode} />} />
-              <Route path="/work" element={<WorkPage darkMode={darkMode} />} />
               <Route path="/tracker" element={<Tracker darkMode={darkMode} />} />
               <Route path="/settings" element={<Settings darkMode={darkMode} />} />
               <Route
