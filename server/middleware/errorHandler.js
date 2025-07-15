@@ -1,11 +1,9 @@
-// Error handling middleware
 const errorHandler = (err, req, res, next) => {
     console.error('Error Stack:', err.stack);
     
     let error = { ...err };
     error.message = err.message;
     
-    // Mongoose bad ObjectId
     if (err.name === 'CastError') {
         const message = 'Invalid ID format';
         error = {
@@ -14,7 +12,6 @@ const errorHandler = (err, req, res, next) => {
         };
     }
     
-    // Mongoose duplicate key
     if (err.code === 11000) {
         const field = Object.keys(err.keyValue)[0];
         const message = `${field} already exists`;
@@ -24,7 +21,6 @@ const errorHandler = (err, req, res, next) => {
         };
     }
     
-    // Mongoose validation error
     if (err.name === 'ValidationError') {
         const message = Object.values(err.errors).map(val => val.message).join(', ');
         error = {
@@ -33,7 +29,6 @@ const errorHandler = (err, req, res, next) => {
         };
     }
     
-    // JWT errors (for future authentication)
     if (err.name === 'JsonWebTokenError') {
         const message = 'Invalid token';
         error = {
@@ -57,7 +52,6 @@ const errorHandler = (err, req, res, next) => {
     });
 };
 
-// 404 Not Found middleware
 const notFound = (req, res, next) => {
     const error = new Error(`Route not found - ${req.originalUrl}`);
     res.status(404);

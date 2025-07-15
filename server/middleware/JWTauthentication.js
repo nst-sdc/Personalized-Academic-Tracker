@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+ikconst jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 // Protect routes middleware

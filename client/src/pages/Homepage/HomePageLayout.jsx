@@ -13,13 +13,9 @@ import api from "../../utils/api";
 function HomePageLayout({ darkMode, setDarkMode }) {
   const location = useLocation();
   const [activeItem, setActiveItem] = useState("home");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  
-  // Shared events state
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Add refreshEvents function
   const refreshEvents = async () => {
     setLoading(true);
     try {

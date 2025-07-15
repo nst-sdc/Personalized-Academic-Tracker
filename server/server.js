@@ -2,18 +2,17 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-// Import configurations and middleware
+
 const connectDB = require('./config/database');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 
-// Import routes
 const authRoutes = require('./routes/authRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 
-// Create Express app
+
 const app = express();
 
-// Connect to database
+
 connectDB();
 
 // Middleware

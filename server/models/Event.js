@@ -45,14 +45,6 @@ const eventSchema = new mongoose.Schema({
     toObject: { virtuals: true }
 });
 
-// Indexes for faster querying
 eventSchema.index({ user: 1 });
-eventSchema.index({ start: 1 });
-eventSchema.index({ end: 1 });
-
-// Virtual for duration (in minutes)
-eventSchema.virtual('duration').get(function() {
-    return (this.end - this.start) / (1000 * 60);
-});
 
 module.exports = mongoose.model('Event', eventSchema);

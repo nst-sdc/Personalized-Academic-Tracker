@@ -34,33 +34,6 @@ export default function Tracker({ darkMode = false }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState(null);
 
-  useEffect(() => {
-    const fetchGrades = async () => {
-      try {
-        const token = getAuthToken();
-        if (!token) return;
-
-        const res = await fetch("http://localhost:3001/api/grades", {
-          method: "GET",
-          headers: getAuthHeaders(),
-          credentials: "include"
-        });
-
-        if (!res.ok) return;
-        const data = await res.json();
-
-        if (Array.isArray(data)) {
-          const normalized = data.map((g) => ({ ...g, id: g._id }));
-          setGrades(normalized);
-        }
-      } catch (err) {
-        console.error("Failed to fetch grades:", err);
-      }
-    };
-
-    fetchGrades();
-  }, []);
-
   const statistics = useMemo(() => {
     if (!Array.isArray(grades) || grades.length === 0) {
       return { gpa: 0, totalCredits: 0, averageMarks: 0, totalAssignments: 0 };
@@ -81,6 +54,94 @@ export default function Tracker({ darkMode = false }) {
       totalAssignments: grades.length
     };
   }, [grades]);
+
+  const filteredGrades = useMemo(() => {
+    let filtered = grades.filter(grade => {
+      const month = new Date(grade.date).toLocaleString("default", { month: "long" });
+      const matchesSearch = grade.courseName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           grade.assignmentTitle.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      return matchesSearch &&
+             (filters.semester === "All" || grade.semester === filters.semester) &&
+             (filters.finalGrade === "All" || grade.finalGrade === filters.finalGrade) &&
+             (filters.month === "All" || month === filters.month);
+    });
+
+    filtered.sort((a, b) => {
+      if (filters.sortBy === "date") {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return filters.sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+      } else if (filters.sortBy === "marks") {
+        return filters.sortOrder === "asc" ? a.marks - b.marks : b.marks - a.marks;
+      }
+      return 0;
+    });
+
+    return filtered;
+  }, [grades, filters, searchTerm]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (editingId) {
+      setGrades(prev => prev.map(grade => 
+        grade.id === editingId 
+          ? { ...formData, id: editingId, marks: Number(formData.marks), maxMarks: Number(formData.maxMarks), credits: Number(formData.credits) }
+          : grade
+      ));
+      setEditingId(null);
+    } else {
+      const newGrade = {
+        ...formData,
+        id: Date.now(),
+        marks: Number(formData.marks),
+        maxMarks: Number(formData.maxMarks),
+        credits: Number(formData.credits)
+      };
+      setGrades(prev => [...prev, newGrade]);
+    }
+    
+    setFormData({
+      semester: "",
+      date: "",
+      courseName: "",
+      assignmentTitle: "",
+      marks: "",
+      maxMarks: "100",
+      expectedGrade: "",
+      finalGrade: "",
+      credits: ""
+    });
+    setShowAddForm(false);
+  };
+
+  const handleEdit = (grade) => {
+    setFormData({
+      semester: grade.semester,
+      date: grade.date,
+      courseName: grade.courseName,
+      assignmentTitle: grade.assignmentTitle,
+      marks: grade.marks.toString(),
+      maxMarks: grade.maxMarks.toString(),
+      expectedGrade: grade.expectedGrade,
+      finalGrade: grade.finalGrade,
+      credits: grade.credits.toString()
+    });
+    setEditingId(grade.id);
+    setShowAddForm(true);
+  };
+
+  const handleDelete = (id) => {
+    setGrades(prev => prev.filter(grade => grade.id !== id));
+  };
+
+  const months = [...new Set(grades.map(g => new Date(g.date).toLocaleString("default", { month: "long" })))];
 
   return (
     <div className={`min-h-screen transition-all duration-300 ${
