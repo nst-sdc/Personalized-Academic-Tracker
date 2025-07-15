@@ -51,6 +51,10 @@ app.use('/api/events', eventRoutes);
 // Direct routes for convenience (optional - if you want /api/signup to work)
 app.use('/api', authRoutes);
 
+const gradeRoutes = require('./routes/gradeRoutes');
+app.use('/api/grades', gradeRoutes);
+
+
 // Handle 404 routes
 app.use(notFound);
 
