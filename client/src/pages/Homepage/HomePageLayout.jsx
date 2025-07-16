@@ -14,7 +14,7 @@ function HomePageLayout({ darkMode, setDarkMode }) {
   const [activeItem, setActiveItem] = useState("home");
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(true); // Fix undefined bug
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const refreshEvents = async () => {
     setLoading(true);
@@ -32,14 +32,9 @@ function HomePageLayout({ darkMode, setDarkMode }) {
     refreshEvents();
   }, []);
 
-  const showDateCol =
-    (location.pathname === "/" || location.pathname === "/calendar");
-
+  const showDateCol = (location.pathname === "/");
   const bgClass = darkMode ? "bg-black text-white" : "bg-white text-black";
-  const isHomepage = location.pathname === "/";
-
-  // Calculate sidebar width for homepage margin
-  const sidebarWidth = sidebarOpen ? "118px" : "70px";
+  const sidebarWidth = sidebarOpen ? "ml-[118px]" : "ml-[70px]";
 
   return (
     <div className={`flex min-h-screen w-full transition-colors duration-300 ${bgClass}`}>
@@ -52,23 +47,25 @@ function HomePageLayout({ darkMode, setDarkMode }) {
         setOpen={setSidebarOpen}
       />
 
-      {/* Main content container - adjusted for fixed sidebar on homepage */}
+      {/* Main content */}
       <div 
-        className={`flex-1 flex flex-col overflow-hidden
-          ${isHomepage ? "transition-all duration-500 ease-in-out" : ""}
-          ${isHomepage ? (sidebarOpen ? "ml-[118px]" : "ml-[70px]") : ""}`}
+        className={`flex-1 flex flex-col overflow-hidden transition-all duration-500 ease-in-out ${sidebarWidth}`}
       >
-        <TopNavbar darkMode={darkMode} setDarkMode={setDarkMode} events={events} refreshEvents={refreshEvents} />
+        <TopNavbar 
+          darkMode={darkMode} 
+          setDarkMode={setDarkMode} 
+          events={events} 
+          refreshEvents={refreshEvents} 
+        />
 
-        <main className="flex flex-row w-full min-h-full">
-          {/* Left date column (optional) */}
+        <main className="flex flex-row w-full h-[calc(100vh-64px)]">
           {showDateCol && (
             <div className="w-auto">
               <LeftDateColoumn darkMode={darkMode} events={events} setEvents={setEvents} />
             </div>
           )}
 
-          {/* Main Content Routing */}
+          {/* Main Content Area */}
           <div className="flex-1 overflow-auto">
             <Routes>
               <Route path="/" element={<MainTimeline darkMode={darkMode} events={events} setEvents={setEvents} />} />
