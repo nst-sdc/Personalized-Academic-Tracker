@@ -4,91 +4,84 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { Calendar as CalendarIcon, Clock, MapPin, Users, Plus, Filter, Search, Download, Settings } from "lucide-react";
+import AddEventModal from "./Homepage/AddEventModal";
 
-const Calendar = ({ darkMode }) => {
+const Calendar = ({ darkMode, events = [], setEvents }) => {
   const [currentView, setCurrentView] = useState("dayGridMonth");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [showDateEvents, setShowDateEvents] = useState(false);
+  const [addEventOpen, setAddEventOpen] = useState(false);
 
-  const events = [
-    {
-      id: "1",
-      title: "Assignment 1 Due",
-      start: "2024-07-29T10:00:00",
-      end: "2024-07-29T11:00:00",
-      allDay: false,
-      backgroundColor: "#ef4444",
-      borderColor: "#ef4444",
-      category: "academic",
-      description: "Submit final assignment for Computer Science course",
-      location: "Online Portal",
-    },
-    {
-      id: "2",
-      title: "Quiz - Data Structures",
-      start: "2024-07-30T14:00:00",
-      end: "2024-07-30T15:30:00",
-      allDay: false,
-      backgroundColor: "#f97316",
-      borderColor: "#f97316",
-      category: "academic",
-      description: "Chapter 5-7 coverage",
-      location: "Room 204",
-    },
-    {
-      id: "3",
-      title: "Project Submission",
-      start: "2024-08-05",
-      allDay: true,
-      backgroundColor: "#10b981",
-      borderColor: "#10b981",
-      category: "work",
-      description: "Final project deliverables",
-      location: "Project Portal",
-    },
-    {
-      id: "4",
-      title: "Mid-term Exam",
-      start: "2024-08-15T09:00:00",
-      end: "2024-08-15T12:00:00",
-      allDay: false,
-      backgroundColor: "#3b82f6",
-      borderColor: "#3b82f6",
-      category: "academic",
-      description: "Comprehensive mid-term examination",
-      location: "Main Hall",
-    },
-    {
-      id: "5",
-      title: "Team Meeting",
-      start: "2024-08-02T15:00:00",
-      end: "2024-08-02T16:00:00",
-      allDay: false,
-      backgroundColor: "#8b5cf6",
-      borderColor: "#8b5cf6",
-      category: "meeting",
-      description: "Weekly team sync and project updates",
-      location: "Conference Room A",
-    },
-  ];
+  // Get events for the selected date
+  const eventsForSelectedDate = selectedDate
+    ? events.filter(event => {
+        const eventDate = new Date(event.start);
+        const selDate = new Date(selectedDate);
+        return (
+          eventDate.getFullYear() === selDate.getFullYear() &&
+          eventDate.getMonth() === selDate.getMonth() &&
+          eventDate.getDate() === selDate.getDate()
+        );
+      })
+    : [];
 
-  const categories = [
-    { id: "all", label: "All Events", color: "gray" },
-    { id: "academic", label: "Academic", color: "blue" },
-    { id: "work", label: "Work", color: "green" },
-    { id: "meeting", label: "Meetings", color: "purple" },
-    { id: "personal", label: "Personal", color: "pink" },
-  ];
+  // Handle date click
+  const handleDateClick = (arg) => {
+    setSelectedDate(arg.dateStr);
+    setShowDateEvents(true);
+  };
 
-  const filteredEvents = events.filter(event => {
-    const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || event.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+  // Helper functions for event stats
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const today = now.getDate();
+
+  // Get start and end of current week (Monday-Sunday)
+  const getStartOfWeek = (date) => {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+    d.setDate(diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+  const getEndOfWeek = (date) => {
+    const d = getStartOfWeek(date);
+    d.setDate(d.getDate() + 6);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  };
+  const startOfWeek = getStartOfWeek(now);
+  const endOfWeek = getEndOfWeek(now);
+
+  // Events in current month
+  const eventsThisMonth = events.filter(event => {
+    const d = new Date(event.start);
+    return d.getFullYear() === year && d.getMonth() === month;
   });
 
-  const handleViewChange = (view) => {
-    setCurrentView(view);
-  };
+  // Events in current week
+  const eventsThisWeek = events.filter(event => {
+    const d = new Date(event.start);
+    return d >= startOfWeek && d <= endOfWeek;
+  });
+
+  // Events today and tomorrow
+  const startOfToday = new Date(year, month, today, 0, 0, 0, 0);
+  const endOfTomorrow = new Date(year, month, today + 1, 23, 59, 59, 999);
+  const eventsUpcoming = events.filter(event => {
+    const d = new Date(event.start);
+    return d >= startOfToday && d <= endOfTomorrow;
+  });
+
+  // Completed events (before today, in this month)
+  const startOfMonth = new Date(year, month, 1, 0, 0, 0, 0);
+  const startOfTodayForCompleted = new Date(year, month, today, 0, 0, 0, 0);
+  const eventsCompleted = events.filter(event => {
+    const d = new Date(event.start);
+    return d >= startOfMonth && d < startOfTodayForCompleted;
+  });
 
   return (
     <div className={`min-h-screen transition-all duration-300 ${
@@ -141,32 +134,11 @@ const Calendar = ({ darkMode }) => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center space-x-3">
-                <button className={`group relative overflow-hidden px-4 py-2.5 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 ${
-                  darkMode 
-                    ? "bg-slate-800/50 hover:bg-slate-700/60 text-gray-300 hover:text-white border border-slate-700/30" 
-                    : "bg-white/60 hover:bg-white/80 text-gray-700 hover:text-gray-900 border border-gray-200/50 shadow-sm hover:shadow-md"
-                }`}>
-                  <span className="relative z-10 flex items-center space-x-2">
-                    <Download className="w-4 h-4" />
-                    <span className="hidden sm:inline">Export</span>
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </button>
-                
-                <button className={`group relative overflow-hidden px-4 py-2.5 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 active:scale-95 ${
-                  darkMode 
-                    ? "bg-slate-800/50 hover:bg-slate-700/60 text-gray-300 hover:text-white border border-slate-700/30" 
-                    : "bg-white/60 hover:bg-white/80 text-gray-700 hover:text-gray-900 border border-gray-200/50 shadow-sm hover:shadow-md"
-                }`}>
-                  <span className="relative z-10 flex items-center space-x-2">
-                    <Settings className="w-4 h-4" />
-                    <span className="hidden sm:inline">Settings</span>
-                  </span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </button>
-
-                <button className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold px-6 py-2.5 rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl">
+              <div className="flex items-center">
+                <button
+                  className="group relative overflow-hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold px-6 py-2.5 rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl"
+                  onClick={() => setAddEventOpen(true)}
+                >
                   <span className="relative z-10 flex items-center space-x-2">
                     <Plus className="w-4 h-4" />
                     <span>Add Event</span>
@@ -177,74 +149,8 @@ const Calendar = ({ darkMode }) => {
             </div>
 
             {/* Filters and Search */}
-            <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
-              {/* Search */}
-              <div className="relative flex-1 max-w-md">
-                <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 ${
-                  darkMode ? 'text-gray-400' : 'text-gray-500'
-                }`} />
-                <input
-                  type="text"
-                  placeholder="Search events..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 ${
-                    darkMode 
-                      ? "bg-slate-800/50 border-slate-700/30 text-white placeholder-gray-400" 
-                      : "bg-white/60 border-gray-200/50 text-gray-900 placeholder-gray-500"
-                  }`}
-                />
-              </div>
-
-              {/* Category Filter */}
-              <div className="flex items-center space-x-2">
-                <Filter className={`w-4 h-4 ${
-                  darkMode ? 'text-gray-400' : 'text-gray-500'
-                }`} />
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className={`px-3 py-2 rounded-xl border transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 ${
-                    darkMode 
-                      ? "bg-slate-800/50 border-slate-700/30 text-white" 
-                      : "bg-white/60 border-gray-200/50 text-gray-900"
-                  }`}
-                >
-                  {categories.map(category => (
-                    <option key={category.id} value={category.id}>
-                      {category.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* View Toggle */}
-              <div className={`flex items-center rounded-xl border ${
-                darkMode ? 'border-slate-700/30 bg-slate-800/30' : 'border-gray-200/50 bg-white/30'
-              }`}>
-                {[
-                  { id: "dayGridMonth", label: "Month" },
-                  { id: "timeGridWeek", label: "Week" },
-                  { id: "timeGridDay", label: "Day" }
-                ].map((view) => (
-                  <button
-                    key={view.id}
-                    onClick={() => handleViewChange(view.id)}
-                    className={`px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                      currentView === view.id
-                        ? darkMode
-                          ? "bg-blue-600 text-white shadow-lg"
-                          : "bg-blue-600 text-white shadow-lg"
-                        : darkMode
-                          ? "text-gray-400 hover:text-white hover:bg-slate-700/50"
-                          : "text-gray-600 hover:text-gray-900 hover:bg-gray-100/50"
-                    }`}
-                  >
-                    {view.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Removed search bar and category filter */}
+            {/* Removed Month/Week/Day view toggle bar */}
           </div>
         </div>
 
@@ -259,13 +165,13 @@ const Calendar = ({ darkMode }) => {
               <div className="calendar-container">
                 <FullCalendar
                   plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                  initialView={currentView}
+                  initialView={"dayGridMonth"}
                   headerToolbar={{
                     left: "prev,next today",
                     center: "title",
                     right: "",
                   }}
-                  events={filteredEvents}
+                  events={events}
                   editable={true}
                   selectable={true}
                   selectMirror={true}
@@ -276,6 +182,7 @@ const Calendar = ({ darkMode }) => {
                   eventClassNames="custom-event"
                   dayHeaderClassNames="custom-day-header"
                   viewClassNames="custom-view"
+                  dateClick={handleDateClick}
                 />
               </div>
             </div>
@@ -283,53 +190,115 @@ const Calendar = ({ darkMode }) => {
 
           {/* Event Statistics */}
           <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6">
-            {[
-              { label: "Total Events", value: filteredEvents.length, color: "blue", icon: CalendarIcon },
-              { label: "This Week", value: "12", color: "green", icon: Clock },
-              { label: "Upcoming", value: "8", color: "purple", icon: MapPin },
-              { label: "Completed", value: "24", color: "orange", icon: Users },
-            ].map((stat, index) => (
-              <div
-                key={index}
-                className={`group relative overflow-hidden backdrop-blur-xl rounded-2xl border p-6 transition-all duration-300 hover:scale-105 ${
-                  darkMode 
-                    ? "bg-slate-800/40 border-slate-700/30 hover:bg-slate-800/60" 
-                    : "bg-white/60 border-gray-200/30 hover:bg-white/80 shadow-sm hover:shadow-lg"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className={`text-sm font-medium ${
-                      darkMode ? "text-gray-400" : "text-gray-600"
-                    }`}>
-                      {stat.label}
-                    </p>
-                    <p className={`text-2xl font-bold mt-1 ${
-                      darkMode ? "text-white" : "text-gray-900"
-                    }`}>
-                      {stat.value}
-                    </p>
-                  </div>
-                  <div className={`p-3 rounded-xl ${
-                    stat.color === 'blue' ? (darkMode ? 'bg-blue-500/20' : 'bg-blue-100') :
-                    stat.color === 'green' ? (darkMode ? 'bg-green-500/20' : 'bg-green-100') :
-                    stat.color === 'purple' ? (darkMode ? 'bg-purple-500/20' : 'bg-purple-100') :
-                    (darkMode ? 'bg-orange-500/20' : 'bg-orange-100')
-                  }`}>
-                    <stat.icon className={`w-6 h-6 ${
-                      stat.color === 'blue' ? (darkMode ? 'text-blue-400' : 'text-blue-600') :
-                      stat.color === 'green' ? (darkMode ? 'text-green-400' : 'text-green-600') :
-                      stat.color === 'purple' ? (darkMode ? 'text-purple-400' : 'text-purple-600') :
-                      (darkMode ? 'text-orange-400' : 'text-orange-600')
-                    }`} />
-                  </div>
+            <div className={`group relative overflow-hidden backdrop-blur-xl rounded-2xl border p-6 transition-all duration-300 hover:scale-105 ${
+              darkMode 
+                ? "bg-slate-800/40 border-slate-700/30 hover:bg-slate-800/60" 
+                : "bg-white/60 border-gray-200/30 hover:bg-white/80 shadow-sm hover:shadow-lg"
+            }`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className={`text-sm font-medium ${darkMode ? "text-gray-400" : "text-gray-600"}`}>Total Events</p>
+                  <p className={`text-2xl font-bold mt-1 ${darkMode ? "text-white" : "text-gray-900"}`}>{eventsThisMonth.length}</p>
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className={`p-3 rounded-xl ${darkMode ? 'bg-blue-500/20' : 'bg-blue-100'}`}>
+                  <CalendarIcon className={`w-6 h-6 ${darkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                </div>
               </div>
-            ))}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </div>
+            <div className={`group relative overflow-hidden backdrop-blur-xl rounded-2xl border p-6 transition-all duration-300 hover:scale-105 ${
+              darkMode 
+                ? "bg-slate-800/40 border-slate-700/30 hover:bg-slate-800/60" 
+                : "bg-white/60 border-gray-200/30 hover:bg-white/80 shadow-sm hover:shadow-lg"
+            }`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className={`text-sm font-medium ${darkMode ? "text-gray-400" : "text-gray-600"}`}>This Week</p>
+                  <p className={`text-2xl font-bold mt-1 ${darkMode ? "text-white" : "text-gray-900"}`}>{eventsThisWeek.length}</p>
+                </div>
+                <div className={`p-3 rounded-xl ${darkMode ? 'bg-green-500/20' : 'bg-green-100'}`}>
+                  <Clock className={`w-6 h-6 ${darkMode ? 'text-green-400' : 'text-green-600'}`} />
+                </div>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </div>
+            <div className={`group relative overflow-hidden backdrop-blur-xl rounded-2xl border p-6 transition-all duration-300 hover:scale-105 ${
+              darkMode 
+                ? "bg-slate-800/40 border-slate-700/30 hover:bg-slate-800/60" 
+                : "bg-white/60 border-gray-200/30 hover:bg-white/80 shadow-sm hover:shadow-lg"
+            }`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className={`text-sm font-medium ${darkMode ? "text-gray-400" : "text-gray-600"}`}>Upcoming</p>
+                  <p className={`text-2xl font-bold mt-1 ${darkMode ? "text-white" : "text-gray-900"}`}>{eventsUpcoming.length}</p>
+                </div>
+                <div className={`p-3 rounded-xl ${darkMode ? 'bg-purple-500/20' : 'bg-purple-100'}`}>
+                  <MapPin className={`w-6 h-6 ${darkMode ? 'text-purple-400' : 'text-purple-600'}`} />
+                </div>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </div>
+            <div className={`group relative overflow-hidden backdrop-blur-xl rounded-2xl border p-6 transition-all duration-300 hover:scale-105 ${
+              darkMode 
+                ? "bg-slate-800/40 border-slate-700/30 hover:bg-slate-800/60" 
+                : "bg-white/60 border-gray-200/30 hover:bg-white/80 shadow-sm hover:shadow-lg"
+            }`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className={`text-sm font-medium ${darkMode ? "text-gray-400" : "text-gray-600"}`}>Completed</p>
+                  <p className={`text-2xl font-bold mt-1 ${darkMode ? "text-white" : "text-gray-900"}`}>{eventsCompleted.length}</p>
+                </div>
+                <div className={`p-3 rounded-xl ${darkMode ? 'bg-orange-500/20' : 'bg-orange-100'}`}>
+                  <Users className={`w-6 h-6 ${darkMode ? 'text-orange-400' : 'text-orange-600'}`} />
+                </div>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Modal for events on selected date */}
+      {showDateEvents && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className={`bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8 max-w-lg w-full relative`}>
+            <button
+              className="absolute top-4 right-4 text-gray-500 dark:text-gray-300 hover:text-red-500"
+              onClick={() => setShowDateEvents(false)}
+            >
+              &times;
+            </button>
+            <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">
+              Events on {selectedDate}
+            </h2>
+            {eventsForSelectedDate.length === 0 ? (
+              <div className="text-gray-500 dark:text-gray-400">No events for this date.</div>
+            ) : (
+              <ul className="space-y-4">
+                {eventsForSelectedDate.map(event => (
+                  <li key={event._id || event.id} className="p-4 rounded-xl border dark:border-slate-600 border-gray-200 bg-gray-50 dark:bg-slate-700">
+                    <div className="font-semibold text-gray-900 dark:text-white">{event.title}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-300">{event.description}</div>
+                    <div className="text-xs mt-1 text-gray-400 dark:text-gray-400">
+                      {event.start ? new Date(event.start).toLocaleString() : ''}
+                      {event.end ? ` - ${new Date(event.end).toLocaleString()}` : ''}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Add Event Modal */}
+      <AddEventModal
+        open={addEventOpen}
+        onClose={() => setAddEventOpen(false)}
+        onSave={newEvent => {
+          setEvents(prev => [...prev, newEvent]);
+        }}
+      />
 
       {/* Custom Styles */}
       <style jsx global>{`
