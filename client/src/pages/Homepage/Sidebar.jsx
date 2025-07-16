@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import {
   AiFillHome,
   AiOutlineCalendar,
@@ -25,6 +26,20 @@ const Sidebar = ({ darkMode, open, setOpen }) => {
   const toggleOpen = setOpen || setInternalOpen;
   const bgColor = darkMode ? "bg-[#0D0D0D]" : "bg-white";
   const isHomepage = location.pathname === "/";
+  
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('tokenExpiry');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('tokenExpiry');
+    // setUser(null);
+    // setShowDropdown(false);
+    navigate('/signin');
+  };
 
   return (
     <aside
@@ -87,6 +102,7 @@ const Sidebar = ({ darkMode, open, setOpen }) => {
             <div className="relative group">
               <button
                 title="Logout"
+                onClick={handleLogout}
                 className={`w-14 h-14 flex items-center justify-center rounded-xl cursor-pointer overflow-hidden
                   transition-all duration-300 ease-out
                   ${darkMode ? "text-gray-400 hover:text-red-400 hover:bg-red-900/20" : "text-gray-500 hover:text-red-600 hover:bg-red-50"}
