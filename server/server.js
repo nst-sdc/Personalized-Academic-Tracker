@@ -2,16 +2,15 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-
 const connectDB = require('./config/database');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 
 const authRoutes = require('./routes/authRoutes');
 const eventRoutes = require('./routes/eventRoutes');
-
+const gradeRoutes = require('./routes/gradeRoutes');
+const academicRoutes = require('./routes/academicRoutes'); // Add this line
 
 const app = express();
-
 
 connectDB();
 
@@ -44,15 +43,12 @@ app.get('/api/health', (req, res) => {
 
 // API Routes - Main auth routes
 app.use('/api/auth', authRoutes);
-
 app.use('/api/events', eventRoutes);
+app.use('/api/grades', gradeRoutes);
+app.use('/api/academic', academicRoutes); // Add this line
 
 // Direct routes for convenience (optional - if you want /api/signup to work)
 app.use('/api', authRoutes);
-
-const gradeRoutes = require('./routes/gradeRoutes');
-app.use('/api/grades', gradeRoutes);
-
 
 // Handle 404 routes
 app.use(notFound);
@@ -69,6 +65,7 @@ const server = app.listen(PORT, () => {
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`📝 Signup endpoint: http://localhost:${PORT}/api/auth/signup`);
     console.log(`🔐 Login endpoint: http://localhost:${PORT}/api/auth/login`);
+    console.log(`🎓 Academic endpoint: http://localhost:${PORT}/api/academic`); // Add this line
 });
 
 // Handle unhandled promise rejections
