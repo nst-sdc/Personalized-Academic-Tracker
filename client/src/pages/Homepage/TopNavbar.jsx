@@ -4,11 +4,13 @@ import { FaUserCircle, FaSignOutAlt, FaUserCog, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import SearchDropdown from "./SearchDropdown";
 import EventDetailModal from "./EventDetailModal";
+import NotificationPanel from "./NotificationPanel";
 import api from "../../utils/api";
 
 function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
   const [user, setUser] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
@@ -18,7 +20,10 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
   const [showEventModal, setShowEventModal] = useState(false);
   const [searchUpdateKey, setSearchUpdateKey] = useState(0);
   const [lastSearchQuery, setLastSearchQuery] = useState("");
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [showNotificationToast, setShowNotificationToast] = useState(false);
   const dropdownRef = useRef(null);
+  const notificationRef = useRef(null);
   const searchTimeoutRef = useRef(null);
   const searchInputRef = useRef(null);
   const modalStateRef = useRef({ selectedEvent: null, showEventModal: false });
@@ -61,6 +66,48 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  // Fetch notification count when user is authenticated
+  useEffect(() => {
+    if (user) {
+      fetchNotificationCount();
+    }
+  }, [user]);
+
+  const fetchNotificationCount = async () => {
+    try {
+      const today = new Date();
+      const threeDaysFromNow = new Date();
+      threeDaysFromNow.setDate(today.getDate() + 3);
+      
+      const response = await api.get('/events', {
+        params: {
+          start: today.toISOString(),
+          end: threeDaysFromNow.toISOString()
+        }
+      });
+      
+      if (response.data.success) {
+        const upcomingEvents = response.data.data || [];
+        const count = upcomingEvents.filter(event => {
+          const eventDate = new Date(event.start || event.date);
+          const timeDiff = eventDate - today;
+          const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+          return daysDiff >= 0 && daysDiff <= 3;
+        }).length;
+        
+        // Show toast if count increased (new reminder)
+        if (count > notificationCount && notificationCount > 0) {
+          setShowNotificationToast(true);
+          setTimeout(() => setShowNotificationToast(false), 3000);
+        }
+        
+        setNotificationCount(count);
+      }
+    } catch (error) {
+      console.error('Error fetching notification count:', error);
+    }
+  };
+
   // Log events when they change
   useEffect(() => {
     console.log('TopNavbar received events:', events?.length || 0);
@@ -79,6 +126,12 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false);
       }
+      
+      // Close notification panel when clicking outside
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotificationPanel(false);
+      }
+      
       // Close search dropdown when clicking outside, but not when clicking on search results
       if (searchInputRef.current && !searchInputRef.current.contains(event.target)) {
         // Check if the click is on a search result element
@@ -242,6 +295,11 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
     if (user) setShowDropdown(prev => !prev);
   };
 
+  const handleNotificationClick = () => {
+    setShowNotificationPanel(prev => !prev);
+    setShowDropdown(false); // Close user dropdown if open
+  };
+
   const getUserDisplayName = () => {
     if (!user) return '';
     if (user.firstName && user.lastName) return `${user.firstName} ${user.lastName}`;
@@ -351,8 +409,9 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
       }
       
       console.log('Event updated successfully');
-      // Refresh main event list
+      // Refresh main event list and notification count
       if (refreshEvents) await refreshEvents();
+      fetchNotificationCount();
     } catch (error) {
       console.error('Update event error:', error);
     }
@@ -367,8 +426,9 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
       setSearchResults(prev => prev.filter(e => (e._id || e.id) !== eventId));
       
       console.log('Event deleted successfully');
-      // Refresh main event list
+      // Refresh main event list and notification count
       if (refreshEvents) await refreshEvents();
+      fetchNotificationCount();
     } catch (error) {
       console.error('Delete event error:', error);
     }
@@ -381,7 +441,11 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
     setHasSearchError(false);
   };
 
-
+  const handleCloseNotification = () => {
+    setShowNotificationPanel(false);
+    // Refresh notification count after closing
+    fetchNotificationCount();
+  };
 
   return (
     <>
@@ -458,16 +522,30 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
 
             {/* Notifications */}
             {user && (
-              <button className={`relative p-3 rounded-2xl transition-all duration-200 ${
-                darkMode 
-                  ? "bg-slate-800/50 text-gray-400 hover:bg-slate-700/50 hover:text-white" 
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
-              }`}>
-                <FiBell className="w-5 h-5" />
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                  2
-                </span>
-              </button>
+              <div className="relative" ref={notificationRef}>
+                <button 
+                  onClick={handleNotificationClick}
+                  className={`relative p-3 rounded-2xl transition-all duration-200 ${
+                    darkMode 
+                      ? "bg-slate-800/50 text-gray-400 hover:bg-slate-700/50 hover:text-white" 
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
+                  }`}
+                >
+                  <FiBell className="w-5 h-5" />
+                  {notificationCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
+                      {notificationCount > 9 ? '9+' : notificationCount}
+                    </span>
+                  )}
+                </button>
+                
+                {/* Notification Panel */}
+                <NotificationPanel
+                  isOpen={showNotificationPanel}
+                  onClose={handleCloseNotification}
+                  darkMode={darkMode}
+                />
+              </div>
             )}
 
             {/* User Profile or Auth Buttons */}
@@ -584,6 +662,33 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
         </div>
       </header>
 
+      {/* Notification Toast */}
+      {showNotificationToast && (
+        <div className={`fixed top-20 right-6 z-50 p-4 rounded-2xl shadow-2xl border backdrop-blur-xl transition-all duration-300 ${
+          darkMode 
+            ? "bg-slate-800/95 border-slate-700/50" 
+            : "bg-white/95 border-gray-200/50"
+        }`}>
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
+              <FiBell className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <p className={`font-semibold text-sm ${
+                darkMode ? "text-white" : "text-gray-900"
+              }`}>
+                New Reminder
+              </p>
+              <p className={`text-xs ${
+                darkMode ? "text-gray-400" : "text-gray-600"
+              }`}>
+                You have upcoming events
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Event Detail Modal */}
       <EventDetailModal
         event={selectedEvent}
@@ -607,8 +712,6 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
         onEdit={handleEventEdit}
         onDelete={handleEventDelete}
       />
-
-
     </>
   );
 }
