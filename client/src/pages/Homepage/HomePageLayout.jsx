@@ -5,7 +5,7 @@ import TopNavbar from "./TopNavbar.jsx";
 import LeftDateColoumn from "./LeftDateColoumn.jsx";
 import MainTimeline from "./MainTimeLine.jsx";
 import Calendar from "../Calendar.jsx"; 
-import Settings from "../Settings";
+import Settings from "../Settings/Settings.jsx";
 import Tracker from "../Tracker/tracker.jsx";
 import api from "../../utils/api";
 
