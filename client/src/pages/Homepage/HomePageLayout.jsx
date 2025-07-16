@@ -72,7 +72,7 @@ function HomePageLayout({ darkMode, setDarkMode }) {
           <div className="flex-1 overflow-auto">
             <Routes>
               <Route path="/" element={<MainTimeline darkMode={darkMode} events={events} setEvents={setEvents} />} />
-              <Route path="/calendar" element={<Calendar darkMode={darkMode} />} />
+              <Route path="/calendar" element={<Calendar darkMode={darkMode} events={events} setEvents={setEvents} />} />
               <Route path="/tracker" element={<Tracker darkMode={darkMode} />} />
               <Route path="/settings" element={<Settings darkMode={darkMode} />} />
               <Route
