@@ -1,40 +1,47 @@
 import React, { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   AiFillHome,
   AiOutlineCalendar,
   AiFillPieChart,
   AiOutlineSetting,
 } from "react-icons/ai";
-import { MdWork, MdPlayArrow, MdLogout, MdTrackChanges } from "react-icons/md";
+import { MdTrackChanges, MdLogout } from "react-icons/md";
 import { SiAirtable } from "react-icons/si";
 
 const navItems = [
   { key: "home", icon: <AiFillHome size={24} />, alt: "Home", path: "/" },
   { key: "calendar", icon: <AiOutlineCalendar size={24} />, alt: "Calendar", path: "/calendar" },
-  { key: "play", icon: <MdPlayArrow size={24} />, alt: "Play", path: "/play" },
   { key: "tracker", icon: <MdTrackChanges size={24} />, alt: "Tracker", path: "/tracker" },
   { key: "settings", icon: <AiOutlineSetting size={24} />, alt: "Settings", path: "/settings" },
 ];
 
 const Sidebar = ({ darkMode, open, setOpen }) => {
   const location = useLocation();
-  // Use props if provided, otherwise use internal state
   const [internalOpen, setInternalOpen] = useState(true);
   const isOpen = open !== undefined ? open : internalOpen;
   const toggleOpen = setOpen || setInternalOpen;
   const bgColor = darkMode ? "bg-[#0D0D0D]" : "bg-white";
-  const isHomepage = location.pathname === "/";
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+    localStorage.removeItem('tokenExpiry');
+    sessionStorage.removeItem('authToken');
+    sessionStorage.removeItem('user');
+    sessionStorage.removeItem('tokenExpiry');
+    navigate('/signin');
+  };
 
   return (
     <aside
-      className={`h-screen flex justify-center overflow-hidden transition-all duration-500 ease-in-out border-r shadow-lg z-50
+      className={`h-screen fixed top-0 left-0 flex justify-center overflow-hidden transition-all duration-500 ease-in-out border-r shadow-lg z-50
         ${bgColor} ${darkMode ? "border-gray-800" : "border-gray-100"}
-        ${isOpen ? "w-[118px]" : "w-[70px]"}
-        ${isHomepage ? "fixed left-0 top-0" : "relative"}`}
+        ${isOpen ? "w-[118px]" : "w-[70px]"}`}
     >
       <div className={`flex flex-col items-center justify-between h-full py-7 w-full transition-all duration-500 ${isOpen ? "" : "py-0"}`}>
-        {/* Logo (clickable) */}
+        {/* Logo */}
         <div
           className="relative group cursor-pointer flex flex-col items-center justify-center"
           style={{ minHeight: isOpen ? 0 : "100vh" }}
@@ -47,12 +54,11 @@ const Sidebar = ({ darkMode, open, setOpen }) => {
           </div>
         </div>
 
-        {/* Navigation and Logout (hide if closed) */}
+        {/* Navigation */}
         {isOpen && (
           <>
-            {/* Navigation */}
             <nav className="flex flex-col items-center gap-6 mt-16">
-              {navItems.map((item, index) => {
+              {navItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 return (
                   <NavLink
@@ -68,15 +74,12 @@ const Sidebar = ({ darkMode, open, setOpen }) => {
                           }`
                       }`}
                   >
-                    {/* Left Active Indicator */}
                     {isActive && (
                       <>
                         <span className="absolute left-0 h-10 w-1 bg-gradient-to-b from-blue-500 to-blue-700 rounded-r-lg shadow-md shadow-blue-400/30"></span>
                         <span className="absolute -left-2 h-10 w-4 bg-blue-400 opacity-20 blur-lg rounded-r-full"></span>
                       </>
                     )}
-
-                    {/* Icon */}
                     <span className="relative z-10">{item.icon}</span>
                   </NavLink>
                 );
@@ -87,6 +90,7 @@ const Sidebar = ({ darkMode, open, setOpen }) => {
             <div className="relative group">
               <button
                 title="Logout"
+                onClick={handleLogout}
                 className={`w-14 h-14 flex items-center justify-center rounded-xl cursor-pointer overflow-hidden
                   transition-all duration-300 ease-out
                   ${darkMode ? "text-gray-400 hover:text-red-400 hover:bg-red-900/20" : "text-gray-500 hover:text-red-600 hover:bg-red-50"}

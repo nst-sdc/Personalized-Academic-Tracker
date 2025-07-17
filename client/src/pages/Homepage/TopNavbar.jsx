@@ -598,7 +598,7 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
                     
                     <div className="p-2">
                       <button
-                        onClick={() => { setShowDropdown(false); navigate('/profile'); }}
+                        onClick={() => { setShowDropdown(false); navigate('/settings'); }}
                         className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                           darkMode 
                             ? "text-gray-300 hover:bg-slate-700/50 hover:text-white" 
@@ -609,7 +609,7 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
                         <span>Profile Settings</span>
                       </button>
                       
-                      <button
+                      {/* <button
                         onClick={() => { setShowDropdown(false); navigate('/settings'); }}
                         className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 ${
                           darkMode 
@@ -619,9 +619,9 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
                       >
                         <FaUserCog className="w-5 h-5" />
                         <span>Preferences</span>
-                      </button>
+                      </button> */}
                       
-                      <hr className="my-2 border-gray-200/20" />
+                      {/* <hr className="my-2 border-gray-200/20" /> */}
                       
                       <button
                         onClick={handleLogout}

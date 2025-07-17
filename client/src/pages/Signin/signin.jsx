@@ -104,7 +104,7 @@ const Signin = ({ darkMode }) => {
         console.log('Login successful:', data.message);
 
         // Redirect to dashboard or home page
-        navigate('/dashboard', { replace: true });
+        navigate('/', { replace: true });
 
       } else {
         // Handle specific error cases
