@@ -91,8 +91,9 @@ const Signup = ({ darkMode = false }) => {
       password: formData.password,
     };
 
+    const API_BASE = import.meta.env.VITE_API_URL;
     try {
-      const response = await fetch('/api/signup', {
+      const response = await fetch(`${API_BASE}/api/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

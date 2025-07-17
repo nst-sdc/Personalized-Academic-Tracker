@@ -10,8 +10,10 @@ const EmailVerified = () => {
         // This effect runs once when the component loads
         if (token) {
             const verifyTokenOnBackend = async () => {
+
+                const API_BASE = import.meta.env.VITE_API_URL;
                 try {
-                    const response = await fetch('/api/auth/verify-email', {
+                    const response = await fetch(`${API_BASE}/api/auth/verify-email`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
