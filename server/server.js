@@ -42,6 +42,9 @@ app.get('/api/health', (req, res) => {
 });
 
 // API Routes - Main auth routes
+app.get('/', (req, res) => {
+    res.send('🎉 Welcome to the Academic Tracker API. Visit /api/health to check server status.');
+  });  
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/grades', gradeRoutes);
