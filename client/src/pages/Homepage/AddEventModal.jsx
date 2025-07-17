@@ -51,7 +51,7 @@ export default function AddEventModal({ open, onClose, onSave }) {
       const start = date && startTime ? new Date(`${date}T${startTime}:00`) : null;
       const end = date && endTime ? new Date(`${date}T${endTime}:00`) : null;
 
-      const response = await api.post('/events', {
+      const response = await api.post('/api/events', {
         title: title.trim(),
         description: description.trim(),
         start,

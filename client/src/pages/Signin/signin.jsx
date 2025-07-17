@@ -58,6 +58,7 @@ const Signin = ({ darkMode }) => {
     setError('');
 
     const API_BASE = import.meta.env.VITE_API_URL;
+    console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
 
     try {
       const response = await fetch(`${API_BASE}/api/auth/login`, {

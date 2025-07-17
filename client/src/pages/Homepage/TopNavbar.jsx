@@ -79,7 +79,7 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
       const threeDaysFromNow = new Date();
       threeDaysFromNow.setDate(today.getDate() + 3);
       
-      const response = await api.get('/events', {
+      const response = await api.get('/api/events', {
         params: {
           start: today.toISOString(),
           end: threeDaysFromNow.toISOString()
@@ -193,7 +193,7 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
       console.log('Available events:', events?.length || 0);
       
       // First try API search
-      const response = await api.get(`/events/search?q=${encodeURIComponent(searchValue.trim())}`);
+      const response = await api.get(`/api/events/search?q=${encodeURIComponent(searchValue.trim())}`);
       console.log('Search response:', response.data);
       
       if (response.data.success) {
@@ -321,7 +321,7 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
   const handleDeleteEvent = async (event) => {
     try {
       const eventId = event._id || event.id;
-      await api.delete(`/events/${eventId}`);
+      await api.delete(`/api/events/${eventId}`);
       // Update local events state if needed
       setSearchResults(prev => prev.filter(e => (e._id || e.id) !== eventId));
       setShowEventModal(false);
@@ -382,7 +382,7 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
       console.log('Starting event update for ID:', eventId);
       console.log('Updated event data:', updatedEvent);
       
-      const response = await api.put(`/events/${eventId}`, updatedEvent);
+      const response = await api.put(`/api/events/${eventId}`, updatedEvent);
       console.log('API response:', response.data);
       
       console.log('Event updated successfully, refreshing search results...');
@@ -393,7 +393,7 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
       if (lastSearchQuery) {
         console.log('Re-performing search with last query:', lastSearchQuery);
         try {
-          const searchResponse = await api.get(`/events/search?q=${encodeURIComponent(lastSearchQuery)}`);
+          const searchResponse = await api.get(`/api/events/search?q=${encodeURIComponent(lastSearchQuery)}`);
           console.log('Search API response:', searchResponse.data);
           
           if (searchResponse.data.success) {
@@ -420,7 +420,7 @@ function TopNavbar({ darkMode, setDarkMode, events, refreshEvents }) {
   const handleEventDelete = async (event) => {
     try {
       const eventId = event._id || event.id;
-      await api.delete(`/events/${eventId}`);
+      await api.delete(`/api/events/${eventId}`);
       
       // Update search results
       setSearchResults(prev => prev.filter(e => (e._id || e.id) !== eventId));

@@ -19,7 +19,7 @@ function HomePageLayout({ darkMode, setDarkMode }) {
   const refreshEvents = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/events');
+      const response = await api.get('/api/events');
       setEvents(response.data.data);
     } catch (error) {
       console.error('Error fetching events:', error);
