@@ -26,7 +26,7 @@ const NotificationPanel = ({ isOpen, onClose, darkMode }) => {
       threeDaysFromNow.setDate(today.getDate() + 3);
       
       // Fetch events that are due in the next 3 days
-      const response = await api.get('/events', {
+      const response = await api.get('/api/events', {
         params: {
           start: today.toISOString(),
           end: threeDaysFromNow.toISOString()
@@ -112,7 +112,7 @@ const NotificationPanel = ({ isOpen, onClose, darkMode }) => {
   const handleMarkAsComplete = async (reminderId) => {
     try {
       // You can implement API call to mark as complete
-      await api.patch(`/events/${reminderId}`, { completed: true });
+      await api.patch(`/api/events/${reminderId}`, { completed: true });
       setReminders(prev => prev.filter(r => r.id !== reminderId));
     } catch (err) {
       console.error('Error marking reminder as complete:', err);

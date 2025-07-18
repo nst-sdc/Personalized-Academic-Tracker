@@ -61,7 +61,7 @@ const LeftDateColumn = ({ darkMode, events = [], setEvents }) => {
         alert('Event is missing an id! Edit will not work.');
         return;
       }
-      const response = await api.put(`/events/${eventId}`, updatedEvent);
+      const response = await api.put(`/api/events/${eventId}`, updatedEvent);
       setEvents(prev => prev.map(ev => (ev.id || ev._id) === eventId ? response.data.data : ev));
       setSelectedEvent(null);
       setEditMode(false);
@@ -77,7 +77,7 @@ const LeftDateColumn = ({ darkMode, events = [], setEvents }) => {
         alert('Invalid event ID');
         return;
       }
-      await api.delete(`/events/${eventId}`);
+      await api.delete(`/api/events/${eventId}`);
       setEvents(prev => prev.filter(ev => (ev.id || ev._id) !== eventId));
       setSelectedEvent(null);
       setEditMode(false);

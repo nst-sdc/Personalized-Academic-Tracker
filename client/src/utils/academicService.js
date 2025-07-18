@@ -45,7 +45,7 @@ export const academicService = {
   // Get academic information
   getAcademicInfo: async () => {
     try {
-      const response = await api.get('/academic');
+      const response = await api.get('/api/academic');
       return response.data;
     } catch (error) {
       if (error.response?.status === 404) {
@@ -58,7 +58,7 @@ export const academicService = {
   // Create academic information
   createAcademicInfo: async (academicData) => {
     try {
-      const response = await api.post('/academic', academicData);
+      const response = await api.post('/api/academic', academicData);
       return response.data;
     } catch (error) {
       if (error.response?.data) {
@@ -71,7 +71,7 @@ export const academicService = {
   // Update academic information
   updateAcademicInfo: async (academicData) => {
     try {
-      const response = await api.put('/academic', academicData);
+      const response = await api.put('/api/academic', academicData);
       return response.data;
     } catch (error) {
       if (error.response?.data) {
@@ -84,7 +84,7 @@ export const academicService = {
   // Delete academic information
   deleteAcademicInfo: async () => {
     try {
-      const response = await api.delete('/academic');
+      const response = await api.delete('/api/academic');
       return response.data;
     } catch (error) {
       if (error.response?.data) {
@@ -97,7 +97,7 @@ export const academicService = {
   // Create or update academic information (upsert)
   upsertAcademicInfo: async (academicData) => {
     try {
-      const response = await api.post('/academic/upsert', academicData);
+      const response = await api.post('/api/academic/upsert', academicData);
       return response.data;
     } catch (error) {
       if (error.response?.data) {
@@ -110,7 +110,7 @@ export const academicService = {
   // Get academic statistics (admin only)
   getAcademicStats: async () => {
     try {
-      const response = await api.get('/academic/stats');
+      const response = await api.get('/api/academic/stats');
       return response.data;
     } catch (error) {
       if (error.response?.data) {
